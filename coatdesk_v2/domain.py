@@ -10,7 +10,7 @@ from pathlib import Path
 from coatdesk.domain import FIELDS, LABELS, OPTIONS
 
 DEFAULT_ROI = [0.38, 0.20, 0.65, 0.38]
-EDITABLE = ("fields", "confirmed", "front", "roi", "roi_manual")
+EDITABLE = ("fields", "confirmed", "front", "roi", "roi_manual", "review_required", "reviewed_values", "field_sources")
 
 
 def fingerprint(value) -> str:
@@ -62,6 +62,73 @@ class Garment:
     suggestion: dict = field(default_factory=dict)
     analysis_key: str = ""
     analysis_state: str = "pending"
+    review_required: list[str] = field(default_factory=list)
+    reviewed_values: dict[str, str] = field(default_factory=dict)
+    field_sources: dict[str, str] = field(default_factory=dict)
+
+    def __post_init__(self):
+        # Older payloads stored a whole-card confirmation. Preserve that review.
+        if self.confirmed and not self.reviewed_values:
+            self.reviewed_values = self.fields.copy()
+        if not self.field_sources:
+            self.field_sources = {key: "legacy" for key in self.fields}
+
+    def analysis_review_keys(self) -> set[str]:
+        required = set(self.suggestion.get("review_fields", []))
+        held = " ".join(self.suggestion.get("held", []))
+        scores = self.suggestion.get("scores", {})
+        thresholds = self.suggestion.get("thresholds", {"panel": .5, "shape": .95, "size": .95})
+        def low(key):
+            return key in scores and scores[key] is not None and scores[key] < thresholds.get(key, .95)
+        if "판넬" in held or low("panel"):
+            required.update(("gender", "age", "size"))
+        if "성별" in held or "연령" in held or low("shape"):
+            required.update(("gender", "age"))
+        if "사이즈" in held or low("size"):
+            required.add("size")
+        return required
+
+    @property
+    def pending_review(self) -> list[str]:
+        required = set(self.review_required) | self.analysis_review_keys()
+        if self.fields.get("age") == "유아동":
+            required.add("gender")
+        return [key for key in FIELDS if key in required and
+                (not self.fields.get(key) or self.reviewed_values.get(key) != self.fields.get(key))]
+
+    @property
+    def export_ready(self) -> bool:
+        return self.complete and not self.pending_review
+
+    def set_field(self, key: str, value: str, source: str = "manual"):
+        if self.fields.get(key, "") != value:
+            self.fields[key] = value
+            self.reviewed_values.pop(key, None)
+            self.confirmed = False
+            self.field_sources[key] = source
+            if key == "age":
+                self.reviewed_values.pop("gender", None)
+        if self.fields.get("age") == "유아동" and not self.fields.get("gender"):
+            self.fields["gender"] = "남성"
+            self.field_sources["gender"] = "child_default"
+            self.review_required = sorted(set(self.review_required) | {"gender"})
+
+    def apply_analysis(self):
+        values = {**self.suggestion.get("candidates", {}), **self.suggestion.get("values", {})}
+        # Category is deliberately manual in this release. Future recognizers can
+        # supply it through this same boundary after a separately approved update.
+        for key in ("gender", "age", "size"):
+            value = values.get(key)
+            if value and not self.fields.get(key):
+                validate_fields({key: value})
+                self.set_field(key, value, "ai")
+        self.review_required = sorted(set(self.review_required) | self.analysis_review_keys())
+
+    def confirm_review(self):
+        if not self.complete:
+            raise ValueError(f"{self.code}: 카테고리·성별·연령·사이즈를 모두 입력하세요.")
+        self.reviewed_values.update(self.fields)
+        self.confirmed = True
 
     @property
     def complete(self) -> bool:
@@ -69,7 +136,7 @@ class Garment:
 
     @property
     def status(self) -> str:
-        if self.confirmed and self.complete:
+        if self.export_ready:
             return "확인 완료"
         return "확인 필요" if self.fields or self.suggestion or self.issues else "미확인"
 
@@ -100,14 +167,16 @@ class Workspace:
     def counts(self) -> dict:
         present = {int(g.code) for g in self.garments}
         active = self.active
-        return {"total": len(active), "confirmed": sum(g.confirmed and g.complete for g in active),
+        return {"total": len(active), "confirmed": sum(g.export_ready for g in active),
                 "excluded": len(present.intersection(self.errors)),
                 "missing": self.end - self.start + 1 - len(present)}
 
     def export_fingerprint(self) -> str:
         return fingerprint({"workspace": self.id, "date": self.shooting_date, "range": [self.start, self.end],
                             "errors": self.errors, "items": [{"code": g.code, "fields": g.fields,
-                            "confirmed": g.confirmed} for g in self.active]})
+                            "confirmed": g.confirmed, "review_required": g.review_required,
+                            "reviewed_values": g.reviewed_values, "pending_review": g.pending_review}
+                            for g in self.active]})
 
 
 def validate_fields(fields: dict) -> None:

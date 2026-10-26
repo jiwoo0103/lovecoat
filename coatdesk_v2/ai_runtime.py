@@ -51,6 +51,7 @@ class Models:
         if not location["valid"]:
             result["held"]=["판넬 위치"]
             result["note"]=f'판넬 위치 확인 필요 · 점수 {location["score"]:.1%} / 기준 {thresholds["panel"]:.0%}. 후보 사진을 확인하거나 영역을 지정하세요.'
+        if not box:
             return result
         square,_=letterbox(photo.crop(box))
         value=tensor(square).unsqueeze(0)
@@ -67,6 +68,7 @@ class Models:
             result["held"].append("성별/성인·아동")
         size=self.child_sizes.get(raw,raw)
         result["candidates"]["size"]=size
+        result["values"].update(result["candidates"])
         consistent=(raw.isdigit() and shape=="child") or (not raw.isdigit() and shape!="child")
         if result["scores"]["size"]>=thresholds["size"] and consistent:
             result["values"]["size"]=size
@@ -79,5 +81,5 @@ class Models:
             notes.append("아동 성별은 임시 남아 규칙이며 옷을 보고 확인하세요")
         if raw.isdigit():
             notes.append(f"아동 표기 {raw} → 사이즈 {size}")
-        result["note"]=" · ".join(notes) or "기준 통과 · 제안 적용 후 사람이 확인 완료하세요."
+        result["note"]=" · ".join(notes) or "기준 통과"
         return result

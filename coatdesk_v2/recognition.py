@@ -9,7 +9,7 @@ from coatdesk.photos import digest
 from .domain import Garment, Workspace, fingerprint, photo_path
 
 DEFAULT_THRESHOLDS = {"panel": .50, "shape": .95, "size": .95}
-ENGINE_VERSION = "three-model-cpu-448-v2.1"
+ENGINE_VERSION = "three-model-cpu-448-v2.2-autofill"
 
 
 class RecognitionEngine:

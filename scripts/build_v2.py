@@ -13,6 +13,26 @@ import uuid
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from coatdesk_v2 import __version__  # noqa: E402 - direct script invocation needs the repository root
+
+
+def desktop_config(path):
+    """Validate without printing credentials or accepting user/service-account tokens."""
+    try:
+        config = json.loads(path.read_text(encoding="utf-8-sig"))
+        installed = config.get("installed", {})
+        required = ("client_id", "client_secret", "auth_uri", "token_uri", "redirect_uris")
+        forbidden = {"refresh_token", "access_token", "private_key", "private_key_id", "id_token"}
+        def unsafe(value):
+            if isinstance(value, dict):
+                return bool(forbidden.intersection(value)) or any(unsafe(v) for v in value.values())
+            return isinstance(value, list) and any(unsafe(v) for v in value)
+        if not all(installed.get(key) for key in required) or unsafe(config) or "web" in config:
+            raise ValueError()
+    except (OSError, ValueError, TypeError, AttributeError):
+        raise ValueError("유효한 Desktop OAuth 클라이언트 설정만 포함할 수 있습니다. 사용자 토큰·서비스 계정 키는 금지합니다.") from None
+    return {"installed": installed}
 
 
 def main():
@@ -38,15 +58,14 @@ def main():
         raise SystemExit("학습 모델 resources/ai를 먼저 준비하세요.")
     if "+cpu" not in importlib.metadata.version("torch"):
         raise SystemExit("CPU 전용 PyTorch 빌드 환경을 사용하세요.")
-    additions = [(runtime, "resources/ai"), (ROOT / "coatdesk_v2/qml", "coatdesk_v2/qml"),
+    additions = [(runtime, "resources/ai"), (ROOT / "resources/standard_sheet.json", "resources"),
+                 (ROOT / "coatdesk_v2/qml", "coatdesk_v2/qml"),
                  (licenses, "licenses"), (ROOT / "README.md", "."), (ROOT / "THIRD_PARTY_NOTICES.md", ".")]
     if args.oauth_client:
-        config = json.loads(args.oauth_client.read_text(encoding="utf-8"))
-        if "installed" not in config or "client_id" not in config["installed"] or "refresh_token" in config:
-            raise SystemExit("데스크톱 앱용 클라이언트 설정만 배포할 수 있습니다.")
+        config = desktop_config(args.oauth_client)
         resource = stage / "resources"
         resource.mkdir()
-        shutil.copy2(args.oauth_client, resource / "google_oauth.json")
+        (resource / "google_oauth.json").write_text(json.dumps(config), encoding="utf-8")
         additions.append((resource, "resources"))
     environment = os.environ.copy()
     windows = Path(os.environ.get("SystemRoot", "C:/Windows"))
@@ -79,11 +98,12 @@ def main():
         lines.append(f'RMDir "$INSTDIR\\{relative}"')
     manifest.write_text("\n".join(lines)+"\n", encoding="utf-8-sig")
     compiler = args.makensis or (Path(shutil.which("makensis")) if shutil.which("makensis") else None)
-    installer = release / "CoatDesk-2.1.0-AI-Setup.exe"
+    installer = release / f"CoatDesk-{__version__}-Setup.exe"
     if compiler:
         subprocess.run([str(compiler.resolve()), "/INPUTCHARSET", "UTF8", f"/DPAYLOAD={payload}", f"/DOUTPUT={installer}",
                         f"/DUNINSTALL_MANIFEST={manifest}", str(ROOT / "installer/CoatDesk2.nsi")], cwd=ROOT, check=True)
-    report = {"version": "2.1.0", "executable": str(payload / "CoatDesk2.exe"), "trained_models": 3,
+    report = {"version": __version__, "executable": str(payload / "CoatDesk2.exe"), "trained_models": 3,
+              "category_ai": False, "embedded_sheet_template": True,
               "installer": str(installer) if installer.exists() else None,
               "google_configured": bool(args.oauth_client), "files": len(files),
               "bytes": sum(p.stat().st_size for p in files),

@@ -114,11 +114,11 @@ def test_backend_selection_batch_confirmation_undo_and_reopen(tmp_path):
     backend.select("0003", Qt.KeyboardModifier.ShiftModifier.value)
     assert backend.selected == {"0001", "0002", "0003"}
     backend.batchFields("코트", "여성", "성인", "M")
-    assert backend.state["counts"]["confirmed"] == 0
+    assert backend.state["counts"]["confirmed"] == 3
     backend.confirmSelected()
     assert backend.state["counts"]["confirmed"] == 3
     backend.setField("0001", "size", "L")
-    assert backend.state["counts"]["confirmed"] == 2
+    assert backend.state["counts"]["confirmed"] == 3
     backend.undo()
     assert backend.state["counts"]["confirmed"] == 3
     backend.setMode("photos")
@@ -126,6 +126,8 @@ def test_backend_selection_batch_confirmation_undo_and_reopen(tmp_path):
     backend.nextGarment(1)
     current = backend.current
     restored = Backend(repo.directory)
+    assert restored.state["home"]
+    restored.openWorkspace(key)
     assert restored.current == current
     assert restored.mode == "photos"
     assert restored.selected == backend.selected

@@ -51,9 +51,11 @@ class FakeApi:
         self.writes = []
         self.after_error = False
         self.before_error = False
+        self.reads = []
     def tabs(self, book):
         return [{"sheetId": s.id, "title": s.title} for s in self.sheets.values()]
     def read(self, book, sheet_id):
+        self.reads.append(sheet_id)
         return copy.deepcopy(self.sheets[sheet_id])
     def batch(self, book, requests):
         self.writes.append(copy.deepcopy(requests))
@@ -61,7 +63,11 @@ class FakeApi:
             raise TimeoutError()
         for req in requests:
             kind, body = next(iter(req.items()))
-            if kind == "duplicateSheet":
+            if kind == "addSheet":
+                p = body["properties"]
+                self.sheets[p["sheetId"]] = Template(p["sheetId"], p["title"], p["gridProperties"]["rowCount"], {},
+                                                      column_count=p["gridProperties"]["columnCount"])
+            elif kind == "duplicateSheet":
                 s = copy.deepcopy(self.sheets[body["sourceSheetId"]])
                 s.id, s.title = body["newSheetId"], body["newSheetName"]
                 self.sheets[s.id] = s
@@ -72,10 +78,37 @@ class FakeApi:
                 s = self.sheets[area["sheetId"]]
                 for r in range(area["startRowIndex"], area["endRowIndex"]):
                     for c in range(area["startColumnIndex"], area["endColumnIndex"]):
-                        s.cells.pop((r, c), None)
+                        cell = s.cells.setdefault((r, c), {})
+                        for field in body["fields"].split(","):
+                            cell.pop(field, None)
                 for r, row in enumerate(body["rows"], area["startRowIndex"]):
                     for c, cell in enumerate(row["values"], area["startColumnIndex"]):
-                        s.cells[r, c] = copy.deepcopy(cell)
+                        s.cells.setdefault((r, c), {}).update({key: copy.deepcopy(value) for key, value in cell.items()
+                                                               if key in body["fields"].split(",")})
+            elif kind == "copyPaste":
+                s = self.sheets[body["destination"]["sheetId"]]
+                field = {"PASTE_FORMAT": "userEnteredFormat", "PASTE_DATA_VALIDATION": "dataValidation"}[body["pasteType"]]
+                source, destination = body["source"], body["destination"]
+                prototype = [copy.deepcopy(s.cells.get((source["startRowIndex"], c), {}))
+                             for c in range(source["startColumnIndex"], source["endColumnIndex"])]
+                for r in range(destination["startRowIndex"], destination["endRowIndex"]):
+                    for offset, c in enumerate(range(destination["startColumnIndex"], destination["endColumnIndex"])):
+                        cell = s.cells.setdefault((r, c), {})
+                        if field in prototype[offset]:
+                            cell[field] = copy.deepcopy(prototype[offset][field])
+                        else:
+                            cell.pop(field, None)
+            elif kind == "updateDimensionProperties":
+                s = self.sheets[body["range"]["sheetId"]]
+                area, pixel = body["range"], body["properties"]["pixelSize"]
+                if area["dimension"] == "ROWS":
+                    s.row_heights = (s.row_heights + [24] * 3)[:3]
+                    for r in range(area["startIndex"], min(3, area["endIndex"])):
+                        s.row_heights[r] = pixel
+                    if area["startIndex"] == 2:
+                        s.row_height = pixel
+                else:
+                    s.dimensions.append({"startColumn": area["startIndex"], "columnMetadata": [{"pixelSize": pixel}]})
             elif kind == "createDeveloperMetadata":
                 m = body["developerMetadata"]
                 self.sheets[m["location"]["sheetId"]].metadata.append(m)
@@ -109,12 +142,14 @@ def test_excluded_codes_do_not_appear_and_ordinals_are_contiguous(tmp_path):
     assert [(r[0], r[1]) for r in plan.rows] == [(1, "0001"), (2, "0004")]
 
 
-@pytest.mark.parametrize("defect", ["unconfirmed", "missing", "dropdown", "formula", "protected", "merged", "unknown_formula"])
+@pytest.mark.parametrize("defect", ["pending_review", "missing", "dropdown", "formula", "protected", "merged", "unknown_formula"])
 def test_incomplete_or_unsupported_templates_block_before_any_write(tmp_path, defect):
     repo, key, api, _ = setup(tmp_path)
     w, t = repo.load(key), api.read(BOOK, 7)
-    if defect == "unconfirmed":
+    if defect == "pending_review":
         w.garments[0].confirmed = False
+        w.garments[0].review_required = ["size"]
+        w.garments[0].reviewed_values = {}
     elif defect == "missing":
         w.garments[0].fields.pop("size")
     elif defect == "dropdown":

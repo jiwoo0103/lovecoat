@@ -1,0 +1,4370 @@
+{
+  "version": 1,
+  "source_sheet": "양식예시(복사해서 사용)",
+  "source_sha256": "0fd971d974608be9e5450d08a87bcd0b187e01751ab03655df8ac1736036eeaf",
+  "row_count": 1000,
+  "column_widths": [
+    26,
+    67,
+    145,
+    115,
+    156,
+    56,
+    67,
+    94,
+    80,
+    67,
+    67,
+    67,
+    67,
+    67,
+    67,
+    67,
+    67,
+    98,
+    61,
+    61,
+    61,
+    61,
+    61,
+    61,
+    61,
+    61
+  ],
+  "row_heights": [
+    106,
+    32,
+    23
+  ],
+  "cells": [
+    [
+      0,
+      0,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      0,
+      1,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "numberFormat": {
+            "type": "TEXT",
+            "pattern": "@"
+          }
+        }
+      }
+    ],
+    [
+      0,
+      2,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "numberFormat": {
+            "type": "TEXT",
+            "pattern": "@"
+          }
+        },
+        "userEnteredValue": {
+          "formulaValue": "=\"일일수량: \" & COUNT(B:B)"
+        }
+      }
+    ],
+    [
+      0,
+      3,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "numberFormat": {
+            "type": "TEXT",
+            "pattern": "@"
+          }
+        }
+      }
+    ],
+    [
+      0,
+      4,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER"
+        }
+      }
+    ],
+    [
+      0,
+      5,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "backgroundColor": {
+            "red": 0.7490196078431373,
+            "green": 0.7490196078431373,
+            "blue": 0.7490196078431373
+          }
+        }
+      }
+    ],
+    [
+      0,
+      6,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER"
+        }
+      }
+    ],
+    [
+      0,
+      7,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER"
+        }
+      }
+    ],
+    [
+      0,
+      8,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER"
+        }
+      }
+    ],
+    [
+      0,
+      9,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "backgroundColor": {
+            "red": 0.7490196078431373,
+            "green": 0.7490196078431373,
+            "blue": 0.7490196078431373
+          }
+        }
+      }
+    ],
+    [
+      0,
+      10,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER"
+        }
+      }
+    ],
+    [
+      0,
+      11,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER"
+        }
+      }
+    ],
+    [
+      0,
+      12,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER"
+        }
+      }
+    ],
+    [
+      0,
+      13,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER"
+        }
+      }
+    ],
+    [
+      0,
+      14,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER"
+        }
+      }
+    ],
+    [
+      0,
+      15,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      0,
+      16,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      0,
+      17,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      1,
+      0,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      1,
+      1,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "backgroundColor": {
+            "red": 0.8509803921568627,
+            "green": 0.8862745098039215,
+            "blue": 0.9529411764705882
+          },
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          },
+          "numberFormat": {
+            "type": "TEXT",
+            "pattern": "@"
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "번호"
+        }
+      }
+    ],
+    [
+      1,
+      2,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "backgroundColor": {
+            "red": 0.8509803921568627,
+            "green": 0.8862745098039215,
+            "blue": 0.9529411764705882
+          },
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          },
+          "numberFormat": {
+            "type": "TEXT",
+            "pattern": "@"
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "외투코드"
+        }
+      }
+    ],
+    [
+      1,
+      3,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "backgroundColor": {
+            "red": 0.8509803921568627,
+            "green": 0.8862745098039215,
+            "blue": 0.9529411764705882
+          },
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          },
+          "numberFormat": {
+            "type": "TEXT",
+            "pattern": "@"
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "이미지"
+        }
+      }
+    ],
+    [
+      1,
+      4,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "backgroundColor": {
+            "red": 0.8509803921568627,
+            "green": 0.8862745098039215,
+            "blue": 0.9529411764705882
+          },
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          },
+          "numberFormat": {
+            "type": "TEXT",
+            "pattern": "@"
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "카테고리"
+        }
+      }
+    ],
+    [
+      1,
+      5,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "backgroundColor": {
+            "red": 0.7490196078431373,
+            "green": 0.7490196078431373,
+            "blue": 0.7490196078431373
+          },
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          },
+          "numberFormat": {
+            "type": "TEXT",
+            "pattern": "@"
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "세부카테고리"
+        }
+      }
+    ],
+    [
+      1,
+      6,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "backgroundColor": {
+            "red": 0.8509803921568627,
+            "green": 0.8862745098039215,
+            "blue": 0.9529411764705882
+          },
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "남성/여성"
+        }
+      }
+    ],
+    [
+      1,
+      7,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "backgroundColor": {
+            "red": 0.8509803921568627,
+            "green": 0.8862745098039215,
+            "blue": 0.9529411764705882
+          },
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "성인/유아동"
+        }
+      }
+    ],
+    [
+      1,
+      8,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "backgroundColor": {
+            "red": 0.8509803921568627,
+            "green": 0.8862745098039215,
+            "blue": 0.9529411764705882
+          },
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "사이즈"
+        }
+      }
+    ],
+    [
+      1,
+      9,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "backgroundColor": {
+            "red": 0.7490196078431373,
+            "green": 0.7490196078431373,
+            "blue": 0.7490196078431373
+          },
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "설명"
+        }
+      }
+    ],
+    [
+      1,
+      10,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "backgroundColor": {
+            "red": 0.8509803921568627,
+            "green": 0.8862745098039215,
+            "blue": 0.9529411764705882
+          },
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "실측(어깨)"
+        }
+      }
+    ],
+    [
+      1,
+      11,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "backgroundColor": {
+            "red": 0.8509803921568627,
+            "green": 0.8862745098039215,
+            "blue": 0.9529411764705882
+          },
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "실측(가슴)"
+        }
+      }
+    ],
+    [
+      1,
+      12,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "backgroundColor": {
+            "red": 0.8509803921568627,
+            "green": 0.8862745098039215,
+            "blue": 0.9529411764705882
+          },
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "실측(소매)"
+        }
+      }
+    ],
+    [
+      1,
+      13,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "backgroundColor": {
+            "red": 0.8509803921568627,
+            "green": 0.8862745098039215,
+            "blue": 0.9529411764705882
+          },
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "실측(총기장)"
+        }
+      }
+    ],
+    [
+      1,
+      14,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": true,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER"
+        }
+      }
+    ],
+    [
+      1,
+      15,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "backgroundColor": {
+            "red": 0.8862745098039215,
+            "green": 0.9372549019607843,
+            "blue": 0.8509803921568627
+          },
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "카테고리"
+        }
+      }
+    ],
+    [
+      1,
+      16,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "backgroundColor": {
+            "red": 0.8862745098039215,
+            "green": 0.9372549019607843,
+            "blue": 0.8509803921568627
+          },
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "사이즈"
+        }
+      }
+    ],
+    [
+      1,
+      17,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "유아동 사이즈"
+        }
+      }
+    ],
+    [
+      2,
+      0,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      2,
+      1,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        }
+      }
+    ],
+    [
+      2,
+      2,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          },
+          "numberFormat": {
+            "type": "TEXT",
+            "pattern": "@"
+          }
+        }
+      }
+    ],
+    [
+      2,
+      3,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          },
+          "numberFormat": {
+            "type": "TEXT",
+            "pattern": "@"
+          }
+        },
+        "userEnteredValue": {
+          "formulaValue": "=IF(C3<>\"\", \"0_\" & C3, \"\")"
+        }
+      }
+    ],
+    [
+      2,
+      4,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "dataValidation": {
+          "condition": {
+            "type": "ONE_OF_LIST",
+            "values": [
+              {
+                "userEnteredValue": "자켓"
+              },
+              {
+                "userEnteredValue": "코트"
+              },
+              {
+                "userEnteredValue": "조끼"
+              },
+              {
+                "userEnteredValue": "기타"
+              }
+            ]
+          },
+          "strict": false,
+          "showCustomUi": true
+        }
+      }
+    ],
+    [
+      2,
+      5,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "backgroundColor": {
+            "red": 0.7490196078431373,
+            "green": 0.7490196078431373,
+            "blue": 0.7490196078431373
+          },
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        }
+      }
+    ],
+    [
+      2,
+      6,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        }
+      }
+    ],
+    [
+      2,
+      7,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        }
+      }
+    ],
+    [
+      2,
+      8,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "dataValidation": {
+          "condition": {
+            "type": "ONE_OF_LIST",
+            "values": [
+              {
+                "userEnteredValue": "2XS"
+              },
+              {
+                "userEnteredValue": "XS"
+              },
+              {
+                "userEnteredValue": "S"
+              },
+              {
+                "userEnteredValue": "M"
+              },
+              {
+                "userEnteredValue": "L"
+              },
+              {
+                "userEnteredValue": "XL"
+              },
+              {
+                "userEnteredValue": "2XL"
+              },
+              {
+                "userEnteredValue": "3XL"
+              }
+            ]
+          },
+          "strict": false,
+          "showCustomUi": true
+        }
+      }
+    ],
+    [
+      2,
+      9,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "backgroundColor": {
+            "red": 0.7490196078431373,
+            "green": 0.7490196078431373,
+            "blue": 0.7490196078431373
+          },
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        }
+      }
+    ],
+    [
+      2,
+      10,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "formulaValue": "=IF(B3<>\"\", 0, \"\")"
+        }
+      }
+    ],
+    [
+      2,
+      11,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "formulaValue": "=IF(B3<>\"\", 0, \"\")"
+        }
+      }
+    ],
+    [
+      2,
+      12,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "formulaValue": "=IF(B3<>\"\", 0, \"\")"
+        }
+      }
+    ],
+    [
+      2,
+      13,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "formulaValue": "=IF(B3<>\"\", 0, \"\")"
+        }
+      }
+    ],
+    [
+      2,
+      14,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER"
+        }
+      }
+    ],
+    [
+      2,
+      15,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "자켓"
+        }
+      }
+    ],
+    [
+      2,
+      16,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "2XS"
+        }
+      }
+    ],
+    [
+      2,
+      17,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "60/70"
+        }
+      }
+    ],
+    [
+      3,
+      15,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "코트"
+        }
+      }
+    ],
+    [
+      3,
+      16,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "XS"
+        }
+      }
+    ],
+    [
+      3,
+      17,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "80/90"
+        }
+      }
+    ],
+    [
+      4,
+      15,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "조끼"
+        }
+      }
+    ],
+    [
+      4,
+      16,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "S"
+        }
+      }
+    ],
+    [
+      4,
+      17,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "100/110"
+        }
+      }
+    ],
+    [
+      5,
+      15,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "기타"
+        }
+      }
+    ],
+    [
+      5,
+      16,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "M"
+        }
+      }
+    ],
+    [
+      5,
+      17,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "120/130"
+        }
+      }
+    ],
+    [
+      6,
+      15,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        }
+      }
+    ],
+    [
+      6,
+      16,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "L"
+        }
+      }
+    ],
+    [
+      6,
+      17,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "140/150"
+        }
+      }
+    ],
+    [
+      7,
+      15,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        }
+      }
+    ],
+    [
+      7,
+      16,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "XL"
+        }
+      }
+    ],
+    [
+      7,
+      17,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "numberValue": 160.0
+        }
+      }
+    ],
+    [
+      8,
+      15,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        }
+      }
+    ],
+    [
+      8,
+      16,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "2XL"
+        }
+      }
+    ],
+    [
+      8,
+      17,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "numberValue": 170.0
+        }
+      }
+    ],
+    [
+      9,
+      15,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        }
+      }
+    ],
+    [
+      9,
+      16,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "MIDDLE",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        },
+        "userEnteredValue": {
+          "stringValue": "3XL"
+        }
+      }
+    ],
+    [
+      9,
+      17,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP",
+          "borders": {
+            "top": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "bottom": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "left": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            },
+            "right": {
+              "style": "SOLID",
+              "color": {
+                "red": 0.0,
+                "green": 0.0,
+                "blue": 0.0
+              }
+            }
+          }
+        }
+      }
+    ],
+    [
+      10,
+      15,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      10,
+      16,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP",
+          "horizontalAlignment": "CENTER"
+        }
+      }
+    ],
+    [
+      10,
+      17,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      11,
+      15,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      11,
+      16,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      11,
+      17,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      12,
+      15,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      12,
+      16,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      12,
+      17,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      13,
+      15,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      13,
+      16,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      13,
+      17,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      14,
+      15,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      14,
+      16,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      14,
+      17,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      15,
+      15,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      15,
+      16,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      15,
+      17,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      16,
+      15,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      16,
+      16,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      16,
+      17,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      17,
+      15,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      17,
+      16,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      17,
+      17,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      18,
+      15,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      18,
+      16,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      18,
+      17,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      19,
+      15,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      19,
+      16,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ],
+    [
+      19,
+      17,
+      {
+        "userEnteredFormat": {
+          "textFormat": {
+            "fontFamily": "Malgun Gothic",
+            "fontSize": 11,
+            "bold": false,
+            "italic": false,
+            "foregroundColor": {
+              "red": 0.0,
+              "green": 0.0,
+              "blue": 0.0
+            }
+          },
+          "verticalAlignment": "BOTTOM",
+          "wrapStrategy": "CLIP"
+        }
+      }
+    ]
+  ]
+}

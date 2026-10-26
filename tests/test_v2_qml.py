@@ -102,11 +102,19 @@ def test_qml_sheet_dialog_keeps_preview_and_completes_fake_transfer(tmp_path):
     dialog = window.findChild(QObject, "transferDialog")
     QMetaObject.invokeMethod(dialog, "open")
     QTest.qWait(50)
-    backend.preview("https://docs.google.com/spreadsheets/d/"+BOOK, 7, "20261024")
+    window.findChild(QObject, "newSheetTabName").setProperty("text", "20261024")
+    preview = window.findChild(QObject, "sheetPreviewButton")
+    assert preview.property("enabled")
+    point = preview.mapToScene(QPointF(preview.width()/2, preview.height()/2))
+    QTest.mouseClick(window, Qt.LeftButton, Qt.NoModifier, QPoint(round(point.x()), round(point.y())))
     wait_for(lambda: not backend.jobs)
     QTest.qWait(50)
     assert backend.plan is not None, backend.error
-    backend.send()
+    assert backend.plan.source_id == -1
+    send = window.findChild(QObject, "sheetSendButton")
+    assert send.property("enabled")
+    point = send.mapToScene(QPointF(send.width()/2, send.height()/2))
+    QTest.mouseClick(window, Qt.LeftButton, Qt.NoModifier, QPoint(round(point.x()), round(point.y())))
     wait_for(lambda: not backend.jobs)
     assert len(api.writes) == 1
     assert backend.last_url.startswith("https://docs.google.com/")

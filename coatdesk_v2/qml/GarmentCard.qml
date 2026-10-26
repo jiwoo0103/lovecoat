@@ -11,11 +11,29 @@ Rectangle {
     property bool frontOnly: true
     property int photoSize: 150
     property var options: ({})
+    function selectCard(modifiers) {
+        var code = record.code
+        var backend = controller
+        card.forceActiveFocus()
+        backend.select(code, modifiers)
+    }
+    function turnPage(delta) {
+        var backend = controller
+        card.forceActiveFocus()
+        backend.pageBy(delta)
+    }
+    function pending(key) { return (record.pendingReview || []).indexOf(key) >= 0 }
+    function reason(key) {
+        if (key === "gender" && record.fields.age === "유아동") return "아동 성별 확인 필수"
+        if ((record.held || []).indexOf("판넬 위치") >= 0) return "판넬 위치 확인 필요"
+        var score = (record.aiScores || {})[key === "gender" || key === "age" ? "shape" : key]
+        return score === undefined ? "직접 확인 필요" : (score * 100).toFixed(0) + "% · 확인 필요"
+    }
     signal zoomRequested(string code)
     signal headRequested(string code)
     radius: 10
-    color: record.excluded ? "#e5e7eb" : record.boundary ? "#fff2df" : "#ffffff"
-    border.color: record.selected ? "#2563eb" : record.boundary ? "#f3a840" : "#dce3eb"
+    color: record.excluded ? "#e5e7eb" : "#ffffff"
+    border.color: record.selected ? "#2563eb" : "#dce3eb"
     border.width: record.selected ? 3 : 1
     Behavior on color { ColorAnimation { duration: 100 } }
 
@@ -26,10 +44,10 @@ Rectangle {
         RowLayout {
             Layout.fillWidth: true
             Label { text: "# " + (card.record.code || ""); font.bold: true; font.pixelSize: 15; color: "#172b42" }
-            Label { visible: !!card.record.boundary; text: "경계"; color: "#a85d0a"; font.pixelSize: 11 }
             Item { Layout.fillWidth: true }
             Label {
-                text: card.record.status || ""
+                visible: !!card.record.needsReview || !!card.record.excluded
+                text: card.record.excluded ? "제외" : "확인 필요"
                 color: card.record.status === "확인 완료" ? "#0f766e" : "#64748b"
                 font.pixelSize: 12
             }
@@ -37,7 +55,8 @@ Rectangle {
                 text: card.record.selected ? "✓" : "+"
                 implicitHeight: 25
                 implicitWidth: 28
-                onClicked: card.controller.select(card.record.code, Qt.ControlModifier)
+                focusPolicy: Qt.NoFocus
+                onClicked: card.selectCard(Qt.ControlModifier)
                 ToolTip.visible: hovered
                 ToolTip.text: "선택 추가 / 해제"
             }
@@ -52,9 +71,9 @@ Rectangle {
                 Layout.fillHeight: true
                 Layout.preferredWidth: card.width * 0.43
                 photo: card.record.photo || ""
-                onSelected: function(modifiers) { card.forceActiveFocus(); card.controller.select(card.record.code, modifiers) }
+                onSelected: function(modifiers) { card.selectCard(modifiers) }
                 onEnlarged: card.zoomRequested(card.record.code)
-                onPaged: function(delta) { card.forceActiveFocus(); card.controller.pageBy(delta) }
+                onPaged: function(delta) { card.turnPage(delta) }
             }
             ColumnLayout {
                 Layout.fillWidth: true
@@ -63,13 +82,17 @@ Rectangle {
                 GridLayout {
                     Layout.fillWidth: true
                     columns: 2
+                    uniformCellWidths: true
                     columnSpacing: 8
                     rowSpacing: 4
                     Choice {
                         Layout.fillWidth: true
-                        label: "카테고리"
+                        label: "옷 분류"
                         choices: card.options.category || []
                         value: card.record.fields.category || ""
+                        objectName: "category_" + card.record.code
+                        requiresReview: card.pending("category")
+                        hint: card.reason("category")
                         enabled: !card.record.excluded
                         onCommitted: function(value) { card.controller.setField(card.record.code, "category", value) }
                     }
@@ -79,69 +102,39 @@ Rectangle {
                         editable: true
                         choices: card.options.size || []
                         value: card.record.fields.size || ""
+                        objectName: "size_" + card.record.code
+                        requiresReview: card.pending("size")
+                        hint: card.reason("size")
                         enabled: !card.record.excluded
                         onCommitted: function(value) { card.controller.setField(card.record.code, "size", value) }
                     }
                     Choice {
                         Layout.fillWidth: true
-                        label: "남성 / 여성"
+                        label: "성별"
                         choices: card.options.gender || []
                         value: card.record.fields.gender || ""
+                        objectName: "gender_" + card.record.code
+                        requiresReview: card.pending("gender")
+                        hint: card.reason("gender")
+                        choiceLabels: card.record.fields.age === "유아동" ? ["남아", "여아"] : []
                         enabled: !card.record.excluded
                         onCommitted: function(value) { card.controller.setField(card.record.code, "gender", value) }
                     }
                     Choice {
                         Layout.fillWidth: true
-                        label: "성인 / 유아동"
+                        label: "성인 / 아동"
                         choices: card.options.age || []
                         value: card.record.fields.age || ""
+                        objectName: "age_" + card.record.code
+                        requiresReview: card.pending("age")
+                        hint: card.reason("age")
                         enabled: !card.record.excluded
                         onCommitted: function(value) { card.controller.setField(card.record.code, "age", value) }
                     }
                 }
-                Label {
-                    Layout.fillWidth: true
-                    text: "제안  " + [card.record.suggestions.gender, card.record.suggestions.age, card.record.suggestions.size].filter(function(v) { return !!v }).join(" · ")
-                    visible: card.height >= 250 && Object.keys(card.record.suggestions).length > 0
-                    color: "#0f766e"
-                    font.pixelSize: 12
-                    elide: Text.ElideRight
-                }
-                Label {
-                    visible: card.height >= 250 && text.length > 0
-                    Layout.fillWidth: true
-                    text: card.record.issues || card.record.note || ""
-                    color: card.record.issues ? "#9a5c20" : "#64748b"
-                    font.pixelSize: 11
-                    elide: Text.ElideRight
-                    ToolTip.visible: issueMouse.containsMouse && text.length > 0
-                    ToolTip.text: (card.record.issues || "") + "\n" + (card.record.note || "")
-                    MouseArea { id: issueMouse; anchors.fill: parent; hoverEnabled: true; acceptedButtons: Qt.NoButton }
-                }
-                Label {
-                    Layout.fillWidth: true
-                    font.pixelSize: 11
-                    color: card.record.held && card.record.held.length > 0 ? "#a03227" : "#475569"
-                    text: {
-                        var s = card.record.aiScores || {};
-                        function pct(k) { return s[k] === undefined ? "미실행" : (s[k] * 100).toFixed(1) + "%"; }
-                        return "판넬 " + (card.record.manualRoi ? "직접 지정" : pct("panel")) + " · 성별 " + pct("shape") + " · 사이즈 " + pct("size");
-                    }
-                    wrapMode: Text.Wrap
-                }
-                Label {
-                    Layout.fillWidth: true
-                    visible: card.record.held && card.record.held.length > 0
-                    font.pixelSize: 11
-                    color: "#a03227"
-                    text: "보류: " + (card.record.held || []).join(" · ") + " / 머리 확대에서 확인"
-                    wrapMode: Text.Wrap
-                }
+                ReviewActions { Layout.fillWidth: true; record: card.record; controller: card.controller }
                 Item { Layout.fillHeight: true }
-                RowLayout {
-                    Button { text: "머리 확대"; implicitHeight: 29; font.pixelSize: 12; onClicked: card.headRequested(card.record.code) }
-                    Button { text: "상세 / 다른 각도"; implicitHeight: 29; font.pixelSize: 12; onClicked: card.zoomRequested(card.record.code) }
-                }
+
             }
         }
         RowLayout {
@@ -156,9 +149,9 @@ Rectangle {
                     Layout.fillHeight: true
                     photo: modelData.url || ""
                     zoom: card.photoSize
-                    onSelected: function(modifiers) { card.forceActiveFocus(); card.controller.select(card.record.code, modifiers) }
+                    onSelected: function(modifiers) { card.selectCard(modifiers) }
                     onEnlarged: card.zoomRequested(card.record.code)
-                    onPaged: function(delta) { card.forceActiveFocus(); card.controller.pageBy(delta) }
+                    onPaged: function(delta) { card.turnPage(delta) }
                     Label {
                         anchors.left: parent.left
                         anchors.bottom: parent.bottom

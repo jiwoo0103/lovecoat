@@ -83,6 +83,10 @@ class Backend(QObject):
         self.mode = "review"
         self.filter_name = "전체"
         self.search = ""
+        self.class_filters = {"gender": "", "size": "", "age": ""}
+        self.show_home = True
+        self.opened = self.repository.setting("open_workspaces", [])
+        self.workspace_undo = {}
         self.cards = 4
         self.rows = 3
         self.front_only = True
@@ -103,12 +107,6 @@ class Backend(QObject):
         self.pool = QThreadPool(self)
         self.pool.setMaxThreadCount(2)
         self.event.connect(self._event)
-        previous = self.repository.setting("last_workspace", "")
-        if previous:
-            try:
-                self.openWorkspace(previous)
-            except Exception as error:
-                self.error = str(error)
 
     @Property(QObject, constant=True)
     def pageModel(self):
@@ -120,7 +118,12 @@ class Backend(QObject):
         count = workspace.counts if workspace else {"total": 0, "confirmed": 0, "excluded": 0, "missing": 0}
         pages = max(1, (len(self.filtered)+self.page_size-1)//self.page_size)
         current = next((g for g in workspace.garments if g.code == self.current), None) if workspace else None
-        return {"hasWorkspace": bool(workspace), "workspaceId": workspace.id if workspace else "",
+        recent = self.repository.recent()
+        return {"hasWorkspace": bool(workspace), "home": self.show_home,
+                "reviewCount": sum(g.status == "확인 필요" for g in workspace.active) if workspace else 0,
+                "readyCount": count["confirmed"],
+                "openWorkspaces": [r for key in self.opened for r in recent if r["id"] == key],
+                "classFilters": self.class_filters, "workspaceId": workspace.id if workspace else "",
                 "name": workspace.name if workspace else "외투 작업실", "date": workspace.shooting_date if workspace else "",
                 "source": workspace.source if workspace else "", "start": workspace.start if workspace else 1,
                 "end": workspace.end if workspace else 400, "errors": ", ".join(map(str, workspace.errors)) if workspace else "",
@@ -149,6 +152,7 @@ class Backend(QObject):
                 "head": image_url(self.workspace.source, garment.photos.get(garment.front, ""), garment.roi if garment.roi_manual else (garment.suggestion.get("roi") or garment.roi)),
                 "aiScores": garment.suggestion.get("scores", {}), "aiCandidates": garment.suggestion.get("candidates", {}),
                 "held": garment.suggestion.get("held", []), "manualRoi": garment.roi_manual,
+                "pendingReview": garment.pending_review, "needsReview": bool(garment.pending_review),
                 "photos": [{"angle": a, "url": image_url(self.workspace.source, garment.photos.get(a, ""))}
                            for a in sorted(set(garment.photos) | {"0", "1", "2"}, key=int)],
                 "issues": " · ".join(garment.issues), "note": garment.suggestion.get("note", ""),
@@ -166,7 +170,8 @@ class Backend(QObject):
                              and (self.filter_name != "미확인" or not g.confirmed)
                              and (self.filter_name != "확인 필요" or g.status == "확인 필요")
                              and (self.filter_name != "확인 완료" or g.status == "확인 완료")
-                             and (not self.search or self.search in g.code)]
+                             and (not self.search or self.search in g.code)
+                             and all(not value or g.fields.get(key) == value for key, value in self.class_filters.items())]
             codes = [g.code for g in self.filtered]
             if keep_code and self.current in codes:
                 self.page = codes.index(self.current)//self.page_size
@@ -196,7 +201,8 @@ class Backend(QObject):
             return
         self.repository.update(self.workspace.id, view={"current": self.current, "selected": sorted(self.selected),
             "mode": self.mode, "filter": self.filter_name, "search": self.search, "cards": self.cards,
-            "rows": self.rows, "front_only": self.front_only, "photo_size": self.photo_size})
+            "rows": self.rows, "front_only": self.front_only, "photo_size": self.photo_size,
+            "class_filters": self.class_filters})
 
     def _fail(self, error):
         self.error = str(error)
@@ -254,7 +260,14 @@ class Backend(QObject):
             self._fail("진행 중인 작업을 마친 뒤 다른 작업공간을 여세요.")
             return
         try:
+            if self.workspace:
+                self._view()
+                self.workspace_undo[self.workspace.id] = self.undo_stack
             self.workspace = self.repository.load(workspace_id)
+            self.show_home = False
+            if workspace_id not in self.opened:
+                self.opened.append(workspace_id)
+                self.repository.set_setting("open_workspaces", self.opened)
             view = self.workspace.view
             self.mode = view.get("mode", "review")
             self.cards = view.get("cards", 4)
@@ -263,9 +276,11 @@ class Backend(QObject):
             self.photo_size = view.get("photo_size", 150)
             self.filter_name = view.get("filter", "전체")
             self.search = view.get("search", "")
+            self.class_filters = {"gender": "", "size": "", "age": "", **view.get("class_filters", {})}
             self.current = view.get("current", "")
+            self.anchor = ""
             self.selected = set(view.get("selected", []))
-            self.undo_stack, self.plan, self.tabs, self.last_url = [], None, [], ""
+            self.undo_stack, self.plan, self.tabs, self.last_url = self.workspace_undo.get(workspace_id, []), None, [], ""
             self.loaded_book = ""
             self.page = 0
             self.repository.set_setting("last_workspace", workspace_id)
@@ -273,6 +288,25 @@ class Backend(QObject):
             self._refresh(False)
         except Exception as error:
             self._fail(error)
+
+    @Slot()
+    def goHome(self):
+        if self.jobs:
+            return
+        try:
+            self._view()
+            self.show_home = True
+            self.changed.emit()
+        except Exception as error:
+            self.saved = False
+            self._fail(error)
+
+    @Slot(str, str, str)
+    def setClassificationFilters(self, gender, size, age):
+        self.class_filters = {"gender": gender, "size": size, "age": age}
+        self.current = ""
+        self.page = 0
+        self._preference()
 
     @Slot()
     def dismissError(self):
@@ -379,9 +413,7 @@ class Backend(QObject):
         try:
             validate_fields({key: value.strip()})
             def change(garment):
-                if garment.fields.get(key, "") != value.strip():
-                    garment.fields[key] = value.strip()
-                    garment.confirmed = False
+                garment.set_field(key, value.strip())
             self._edit([code], change)
         except Exception as error:
             self.saved = False
@@ -395,9 +427,8 @@ class Backend(QObject):
             if not values:
                 raise ValueError("일괄 적용할 값을 선택하세요.")
             def change(garment):
-                if any(garment.fields.get(k) != v for k, v in values.items()):
-                    garment.fields.update(values)
-                    garment.confirmed = False
+                for key, value in values.items():
+                    garment.set_field(key, value)
             self._edit(sorted(self.selected), change)
         except Exception as error:
             self._fail(error)
@@ -409,8 +440,7 @@ class Backend(QObject):
                 values = {k: v for k, v in garment.suggestion.get("values", {}).items() if k in FIELDS and not garment.fields.get(k)}
                 if values:
                     validate_fields(values)
-                    garment.fields.update(values)
-                    garment.confirmed = False
+                    garment.apply_analysis()
             self._edit(sorted(self.selected), change)
         except Exception as error:
             self._fail(error)
@@ -422,10 +452,17 @@ class Backend(QObject):
             if self.selected - active:
                 raise ValueError("제외한 옷은 확인 완료 대상이 아닙니다.")
             def change(garment):
-                if not garment.complete:
-                    raise ValueError(f"{garment.code}: 카테고리·성별·연령·사이즈를 모두 입력하세요.")
-                garment.confirmed = True
+                garment.confirm_review()
             self._edit(sorted(self.selected), change)
+        except Exception as error:
+            self._fail(error)
+
+    @Slot(str)
+    def confirmGarment(self, code):
+        try:
+            if not self.workspace or code not in {g.code for g in self.workspace.active}:
+                raise ValueError("현재 작업 대상의 옷을 확인하세요.")
+            self._edit([code], lambda garment: garment.confirm_review())
         except Exception as error:
             self._fail(error)
 
@@ -435,6 +472,8 @@ class Backend(QObject):
             def change(garment):
                 garment.fields = {}
                 garment.confirmed = False
+                garment.reviewed_values = {}
+                garment.field_sources = {}
             self._edit(sorted(self.selected), change)
         except Exception as error:
             self._fail(error)
@@ -582,12 +621,13 @@ class Backend(QObject):
                     suggestion = {"values": {}, "review": True, "note": f"사진 인식 실패 ({type(error).__name__}). 사진과 영역을 확인하세요."}
                 def save(item):
                     item.suggestion, item.analysis_key, item.analysis_state = suggestion, key, state
+                    item.apply_analysis()
                 self.repository.edit(workspace.id, [g.code], save)
                 completed += 1
                 progress(f"분석 · {completed} / {len(garments)}벌 · {g.code}")
             return completed
         def done(count):
-            self.message = f"분석 {'중단' if self.cancel_event.is_set() else '완료'} · {count}벌 처리 · 제안을 확인하고 적용하세요."
+            self.message = f"분석 {'중단' if self.cancel_event.is_set() else '완료'} · {count}벌 처리 · 빈 항목에 입력했습니다. 확인 필요 항목을 검수하세요."
         self._run("현재 화면의 옷부터 분석합니다…", analyze, done, "recognition")
 
     @Slot()
@@ -645,8 +685,8 @@ class Backend(QObject):
                     return
                 self.tabs = tabs
                 self.loaded_book = book
-                self.message = "복제할 양식 탭을 선택하고 미리보기를 만드세요."
-            self._run("시트 탭을 불러옵니다…", lambda progress: self.api_factory().tabs(book), done)
+                self.message = "대상 문서를 확인했습니다. 내장 양식으로 새 탭 미리보기를 만드세요."
+            self._run("대상 문서를 확인합니다…", lambda progress: self.api_factory().tabs(book), done)
         except Exception as error:
             self._fail(error)
 
@@ -658,11 +698,11 @@ class Backend(QObject):
         self.plan = None
         try:
             book = spreadsheet_id(url)
-            if book != self.loaded_book or source_id not in {t["sheetId"] for t in self.tabs}:
-                raise ValueError("대상 파일의 탭을 먼저 다시 불러오세요.")
+            if book != self.loaded_book:
+                raise ValueError("대상 문서를 먼저 연결하세요.")
             def prepare(progress):
                 api = self.api_factory()
-                return sheets.build_plan(workspace, api.read(book, source_id), api.tabs(book), book, title)
+                return sheets.build_plan(workspace, sheets.builtin_template(), api.tabs(book), book, title)
             def done(plan):
                 if self.workspace.export_fingerprint() != plan.workspace_digest:
                     raise ValueError("미리보기를 만드는 동안 입력이 바뀌었습니다. 다시 만드세요.")

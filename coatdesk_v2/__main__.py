@@ -14,6 +14,7 @@ from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtQuickControls2 import QQuickStyle
 
 from .backend import Backend
+from . import __version__
 from .images import Photos
 
 
@@ -40,7 +41,7 @@ def main():
     app = QGuiApplication(sys.argv[:1])
     app.setApplicationName("CoatDesk v2")
     app.setOrganizationName("CoatDesk")
-    app.setApplicationVersion("2.1.0")
+    app.setApplicationVersion(__version__)
     if not QFontDatabase.families():
         QFontDatabase.addApplicationFont("C:/Windows/Fonts/malgun.ttf")
     QQuickStyle.setStyle("Basic")
@@ -78,7 +79,7 @@ def main():
             args.smoke_test.parent.mkdir(parents=True, exist_ok=True)
             success = engine.rootObjects()[0].grabWindow().save(str(args.smoke_test))
             report = {"ok": success and not messages and not backend.error, "warnings": messages,
-                      "error": backend.error, "counts": backend.state["counts"], "version": "2.1.0"}
+                      "error": backend.error, "counts": backend.state["counts"], "version": __version__}
             if args.smoke_ocr:
                 from .recognition import RecognitionEngine
                 report["ocr_runtime"] = bool(RecognitionEngine().executable)
