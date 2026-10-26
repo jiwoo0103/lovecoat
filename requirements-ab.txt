@@ -1,0 +1,7 @@
+# Separate experimental environment; not installed in the desktop app runtime.
+# Install CUDA builds from https://download.pytorch.org/whl/cu128.
+torch==2.11.0+cu128
+torchvision==0.26.0+cu128
+numpy==2.5.4
+Pillow==13.0.0
+opencv-python-headless==5.0.0.93

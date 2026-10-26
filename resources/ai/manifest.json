@@ -1,0 +1,9 @@
+{
+  "version": "2.1.0",
+  "files": {
+    "detector.pt": "9dda67faf8ef1933f3121979c0e6ea44825e70ac544bd61875733287d10a5185",
+    "panel-shape.pt": "b8acd4a2efb084fa1339cb09cc36c0434b0438c9660e1b420fe1ebda69b02e90",
+    "panel-size.pt": "b9f1f7848c25db340308585b78c2ff37ebf574c5992b2bbd68883256f9accdf6",
+    "size_mapping.json": "88b2c61bb4fbf3b3ddfe71828eac267df3c08de566b68e5dfe65a4dd898050d5"
+  }
+}

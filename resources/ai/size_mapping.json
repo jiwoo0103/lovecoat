@@ -1,0 +1,75 @@
+{
+  "adult_sizes": [
+    "2XS",
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL",
+    "2XL",
+    "3XL"
+  ],
+  "child_correspondence": [
+    {
+      "size_label": "2XS",
+      "child_size_group": "60/70",
+      "visible_numbers": [
+        "60",
+        "70"
+      ],
+      "source_cells": "Q3:R3"
+    },
+    {
+      "size_label": "XS",
+      "child_size_group": "80/90",
+      "visible_numbers": [
+        "80",
+        "90"
+      ],
+      "source_cells": "Q4:R4"
+    },
+    {
+      "size_label": "S",
+      "child_size_group": "100/110",
+      "visible_numbers": [
+        "100",
+        "110"
+      ],
+      "source_cells": "Q5:R5"
+    },
+    {
+      "size_label": "M",
+      "child_size_group": "120/130",
+      "visible_numbers": [
+        "120",
+        "130"
+      ],
+      "source_cells": "Q6:R6"
+    },
+    {
+      "size_label": "L",
+      "child_size_group": "140/150",
+      "visible_numbers": [
+        "140",
+        "150"
+      ],
+      "source_cells": "Q7:R7"
+    },
+    {
+      "size_label": "XL",
+      "child_size_group": "160",
+      "visible_numbers": [
+        "160"
+      ],
+      "source_cells": "Q8:R8"
+    },
+    {
+      "size_label": "2XL",
+      "child_size_group": "170",
+      "visible_numbers": [
+        "170"
+      ],
+      "source_cells": "Q9:R9"
+    }
+  ]
+}
