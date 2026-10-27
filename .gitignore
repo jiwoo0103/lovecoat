@@ -30,6 +30,7 @@ photos/
 *.jpg
 *.jpeg
 *.png
+!docs/design/approved-blue-review.png
 *.webp
 *.bmp
 *.xlsx

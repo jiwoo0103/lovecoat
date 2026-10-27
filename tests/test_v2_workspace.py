@@ -212,22 +212,26 @@ def test_cancel_stores_completed_garment_and_keeps_remaining_pending(tmp_path):
     assert app
 
 
-def test_changing_url_discards_old_tabs_and_preview(tmp_path):
+def test_changing_excel_path_or_input_discards_preview(tmp_path):
     app = application()
-    repo, key = workspace(tmp_path)
-    class Api:
-        def tabs(self, book):
-            return [{"sheetId": 7, "title": "template"}]
-    backend = Backend(repo.directory, api_factory=lambda: Api())
+    repo, key = workspace(tmp_path, 1)
+    backend = Backend(repo.directory)
     backend.openWorkspace(key)
-    url = "https://docs.google.com/spreadsheets/d/"+"a"*24
-    backend.loadTabs(url)
+    backend.selectPage()
+    backend.batchFields("자켓", "여성", "성인", "M")
+    path = tmp_path / "외투목록.xlsx"
+    backend.previewExcel(str(path), "20261024")
     wait_for(lambda: not backend.jobs)
-    assert len(backend.tabs) == 1
-    backend.sheetTargetChanged(url.replace("a"*24, "b"*24))
-    assert backend.tabs == []
-    assert backend.loaded_book == ""
+    assert backend.plan is not None, backend.error
+    assert backend.state["planPath"] == str(path)
+    backend.excelTargetChanged(str(tmp_path / "다른 파일.xlsx"))
     assert backend.plan is None
+    backend.previewExcel(str(path), "20261024")
+    wait_for(lambda: not backend.jobs)
+    assert backend.plan is not None, backend.error
+    backend.setField("0001", "size", "L")
+    assert backend.plan is None
+    assert not path.exists()
     backend.shutdown()
     assert app
 

@@ -10,8 +10,7 @@ Tesseract 고지는 기존 2.0 배포에 해당하며, 2.1 인식 경로에는 �
 - Pillow: MIT-CMU. <https://github.com/python-pillow/Pillow/blob/main/LICENSE>
 - PyTorch 2.11.0 CPU: BSD 계열 라이선스 및 포함 구성요소 고지. `_internal/licenses/torch`에 원문을 포함합니다. <https://github.com/pytorch/pytorch/blob/main/LICENSE>
 - torchvision 0.26.0 CPU: BSD 3-Clause. 판넬 위치·ResNet 분류 모델 구조와 초기 가중치에 사용합니다. `_internal/licenses/torchvision` 및 `_internal/resources/ai/TORCHVISION_LICENSE`를 포함합니다. <https://github.com/pytorch/vision/blob/main/LICENSE>
-- Google API Python Client / Google Auth: Apache 2.0. <https://github.com/googleapis/google-api-python-client>
-- PyWin32: Python Software Foundation 계열 라이선스. <https://github.com/mhammond/pywin32>
+- openpyxl 3.1.5 / et-xmlfile 2.0.0: MIT. Excel 파일 생성과 새 시트 추가에 사용합니다. <https://openpyxl.readthedocs.io/>, <https://et-xmlfile.readthedocs.io/>
 - Tesseract 5.5.3 / tessdata_fast 영어 모델: Apache 2.0.
   <https://github.com/tesseract-ocr/tesseract>, <https://github.com/tesseract-ocr/tessdata_fast>
 - Tesseract Windows 바이너리: UB Mannheim에서 만든 공식 프로젝트 배포 첨부 파일.

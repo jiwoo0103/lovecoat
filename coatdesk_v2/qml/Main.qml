@@ -156,7 +156,7 @@ ApplicationWindow {
                     objectName: "workspaceMenu"
                     x: parent.width - width
                     y: parent.height
-                    MenuItem { text: "Google 시트로 보내기"; onTriggered: transferDialog.open() }
+                    MenuItem { objectName: "excelExportAction"; text: "엑셀로 저장"; onTriggered: { window.contentItem.forceActiveFocus(); transferDialog.open() } }
                     MenuSeparator {}
                     MenuItem { text: "보기 설정"; onTriggered: viewDialog.open() }
                     MenuItem { text: "사진 폴더 / 에러번호"; onTriggered: sourceDialog.open() }
@@ -572,38 +572,48 @@ ApplicationWindow {
     Dialog {
         id: transferDialog
         objectName: "transferDialog"
-        title: "새 Google 시트 탭으로 보내기"
+        title: "엑셀 파일에 새 시트로 저장"
+        palette.window: "#ffffff"
+        palette.windowText: "#203a42"
+        palette.text: "#203a42"
         modal: true
         anchors.centerIn: parent
-        width: 900
+        width: Math.min(900, window.width-40)
         height: Math.min(720, window.height-70)
         standardButtons: Dialog.Close
-        onOpened: { sheetUrl.text = appState.sheetUrl; newTab.text = appState.date.replace(/-/g, "") }
+        onOpened: { excelPath.text = appState.excelPath; newTab.text = appState.date.replace(/-/g, ""); appBackend.invalidatePlan() }
         ColumnLayout {
             anchors.fill: parent
             spacing: 10
+            Label { Layout.fillWidth: true; text: "엑셀 파일 하나에 작업 날짜별 시트를 추가합니다. 기존 시트는 유지합니다."; color: "#64748b"; wrapMode: Text.Wrap }
             RowLayout {
-                Button { text: "Google 로그인"; enabled: !appState.busy; onClicked: appBackend.login() }
-                Label { text: "본인 계정으로 로그인하고 편집 가능한 파일을 지정하세요."; color: "#64748b" }
-                Item { Layout.fillWidth: true }
-                ToolButton { text: "관리자 연결 설정"; enabled: !appState.busy; onClicked: oauthFile.open() }
+                Layout.fillWidth: true
+                Button { text: "새 엑셀 파일"; enabled: !appState.busy; onClicked: newExcelFile.open() }
+                Button { text: "기존 엑셀 파일 선택"; enabled: !appState.busy; onClicked: existingExcelFile.open() }
             }
-            RowLayout {
-                TextField { id: sheetUrl; objectName: "sheetUrlField"; enabled: !appState.busy; Layout.fillWidth: true; placeholderText: "Google 스프레드시트 URL"; onTextChanged: appBackend.sheetTargetChanged(text) }
-                Button { text: "문서 연결"; enabled: !appState.busy; onClicked: appBackend.loadTabs(sheetUrl.text) }
+            TextField {
+                id: excelPath
+                objectName: "excelPathField"
+                enabled: !appState.busy
+                Layout.fillWidth: true
+                placeholderText: "저장할 .xlsx 파일을 선택하거나 전체 경로를 입력하세요."
+                selectByMouse: true
+                onTextChanged: appBackend.excelTargetChanged(text)
             }
             RowLayout {
                 Label { text: "내장 표준 양식"; color: "#73818c" }
                 Item { Layout.fillWidth: true }
-                Label { text: "새 탭 이름" }
-                TextField { id: newTab; objectName: "newSheetTabName"; enabled: !appState.busy; Layout.preferredWidth: 160; onTextChanged: appBackend.invalidatePlan() }
-                Button { text: "미리보기"; objectName: "sheetPreviewButton"; enabled: !appState.busy && sheetUrl.text.trim().length > 0 && newTab.text.trim().length > 0; onClicked: appBackend.preview(sheetUrl.text, -1, newTab.text) }
+                Label { text: "새 시트 이름" }
+                TextField { id: newTab; objectName: "newExcelSheetName"; enabled: !appState.busy; Layout.preferredWidth: 160; onTextChanged: appBackend.invalidatePlan() }
+                Button { text: "미리보기"; objectName: "excelPreviewButton"; enabled: !appState.busy && excelPath.text.trim().length > 0 && newTab.text.trim().length > 0; onClicked: appBackend.previewExcel(excelPath.text, newTab.text) }
             }
-            Label { text: "대상 " + appState.counts.total + "벌  ·  전송 가능 " + appState.counts.confirmed + "벌  ·  제외 " + appState.counts.excluded + "벌  ·  누락 " + appState.counts.missing + "벌"; font.bold: true }
-            Label { text: appState.planReady ? "생성할 새 탭: " + appState.planTitle + "  /  아래 내용을 확인한 뒤 전송하세요." : "모든 대상의 네 항목 입력과 필요한 확인을 마치면 미리보기를 만들 수 있습니다."; color: "#0f766e" }
+            Label { Layout.fillWidth: true; text: "대상 " + appState.counts.total + "벌  ·  저장 가능 " + appState.counts.confirmed + "벌  ·  제외 " + appState.counts.excluded + "벌  ·  누락 " + appState.counts.missing + "벌"; font.bold: true; wrapMode: Text.Wrap }
+            Label { Layout.fillWidth: true; text: appState.planReady ? (appState.planAddsToFile ? "기존 파일에 시트 추가: " : "새 파일에 시트 생성: ") + appState.planTitle + "  /  아래 내용을 확인한 뒤 저장하세요." : "모든 대상의 네 항목 입력과 필요한 확인을 마치면 미리보기를 만들 수 있습니다."; color: "#0f766e"; wrapMode: Text.Wrap }
+            Label { visible: appState.planReady; Layout.fillWidth: true; text: appState.planPath; color: "#64748b"; elide: Text.ElideMiddle }
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                Layout.minimumHeight: 90
                 color: "#f8fafc"
                 border.color: "#dce3eb"
                 radius: 6
@@ -612,21 +622,37 @@ ApplicationWindow {
                     anchors.margins: 8
                     clip: true
                     model: appState.planRows
-                    header: Label { text: "번호     외투코드          카테고리        성별        연령        사이즈"; height: 32; font.bold: true }
-                    delegate: Label { width: ListView.view.width; text: modelData.join("          "); height: 30; font.family: "Malgun Gothic" }
+                    header: Label { text: "번호     외투코드          카테고리        성별        연령        사이즈"; height: 32; font.bold: true; color: "#203a42" }
+                    delegate: Label { width: ListView.view.width; text: modelData.join("          "); height: 30; font.family: "Malgun Gothic"; color: "#203a42" }
                     ScrollBar.vertical: ScrollBar {}
                 }
             }
-            Label { Layout.fillWidth: true; text: "전송할 때마다 내장 표준 양식으로 새 탭을 만듭니다. 이미지 칸에는 사진 식별자가 들어갑니다."; color: "#64748b"; wrapMode: Text.Wrap }
+            Label { Layout.fillWidth: true; text: "같은 이름이 있으면 (2), (3)을 붙입니다. 사진 식별자가 저장되며 실제 사진은 파일에 포함하지 않습니다."; color: "#64748b"; wrapMode: Text.Wrap }
             Label { visible: appState.error.length > 0; Layout.fillWidth: true; text: appState.error; color: "#a03227"; wrapMode: Text.Wrap }
             RowLayout {
-                Button { visible: appState.unresolved > 0; text: "이전 전송 결과 확인"; enabled: !appState.busy; onClicked: appBackend.checkPreviousExport() }
-                Button { visible: appState.lastUrl.length > 0; text: "전송한 탭 열기"; onClicked: Qt.openUrlExternally(appState.lastUrl) }
+                Button { visible: appState.lastFileUrl.length > 0; text: "저장한 파일 열기"; onClicked: Qt.openUrlExternally(appState.lastFileUrl) }
                 Item { Layout.fillWidth: true }
                 BusyIndicator { implicitWidth: 30; implicitHeight: 30; running: appState.busy; visible: running }
-                Button { objectName: "sheetSendButton"; text: "확인한 내용으로 새 탭에 전송"; highlighted: true; enabled: appState.planReady && !appState.busy && appState.unresolved === 0; onClicked: appBackend.send() }
+                Button { objectName: "excelSaveButton"; text: "확인한 내용으로 새 시트에 저장"; highlighted: true; enabled: appState.planReady && !appState.busy; onClicked: appBackend.saveExcel() }
             }
         }
     }
-    FileDialog { id: oauthFile; title: "관리자용 데스크톱 OAuth 연결 JSON"; nameFilters: ["JSON 파일 (*.json)"]; onAccepted: appBackend.setOAuthClient(selectedFile.toString()) }
+    FileDialog {
+        id: newExcelFile
+        objectName: "newExcelFileDialog"
+        title: "새 엑셀 파일 저장 위치"
+        fileMode: FileDialog.SaveFile
+        options: FileDialog.DontConfirmOverwrite
+        defaultSuffix: "xlsx"
+        nameFilters: ["엑셀 파일 (*.xlsx)"]
+        onAccepted: excelPath.text = selectedFile.toString()
+    }
+    FileDialog {
+        id: existingExcelFile
+        objectName: "existingExcelFileDialog"
+        title: "시트를 추가할 엑셀 파일"
+        fileMode: FileDialog.OpenFile
+        nameFilters: ["엑셀 파일 (*.xlsx)"]
+        onAccepted: excelPath.text = selectedFile.toString()
+    }
 }

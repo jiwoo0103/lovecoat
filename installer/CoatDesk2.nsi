@@ -8,10 +8,10 @@ OutFile "${OUTPUT}"
 InstallDir "$LOCALAPPDATA\Programs\CoatDesk"
 RequestExecutionLevel user
 SetCompressor /FINAL zlib
-VIProductVersion "2.2.0.0"
+VIProductVersion "2.3.0.0"
 VIAddVersionKey /LANG=1042 "ProductName" "외투 작업실 2"
 VIAddVersionKey /LANG=1042 "FileDescription" "외투 작업실 2 설치 프로그램"
-VIAddVersionKey /LANG=1042 "FileVersion" "2.2.0"
+VIAddVersionKey /LANG=1042 "FileVersion" "2.3.0"
 VIAddVersionKey /LANG=1042 "LegalCopyright" "CoatDesk"
 
 Var Sandbox
@@ -61,7 +61,7 @@ Section "프로그램 (필수)" Main
     CreateShortcut "$SMPROGRAMS\외투 작업실 2\호환 모드.lnk" "$INSTDIR\CoatDesk2.exe" "--software-rendering"
     CreateShortcut "$SMPROGRAMS\외투 작업실 2\프로그램 제거.lnk" "$INSTDIR\Uninstall.exe"
     WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\CoatDeskV2" "DisplayName" "외투 작업실 2"
-    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\CoatDeskV2" "DisplayVersion" "2.2.0"
+    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\CoatDeskV2" "DisplayVersion" "2.3.0"
     WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\CoatDeskV2" "UninstallString" '$\"$INSTDIR\Uninstall.exe$\"'
     WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\CoatDeskV2" "InstallLocation" "$INSTDIR"
     WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\CoatDeskV2" "NoModify" 1

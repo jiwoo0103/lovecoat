@@ -7,6 +7,7 @@ import importlib.metadata
 import json
 import os
 import shutil
+import ssl
 import subprocess
 import sys
 import uuid
@@ -17,35 +18,20 @@ sys.path.insert(0, str(ROOT))
 from coatdesk_v2 import __version__  # noqa: E402 - direct script invocation needs the repository root
 
 
-def desktop_config(path):
-    """Validate without printing credentials or accepting user/service-account tokens."""
-    try:
-        config = json.loads(path.read_text(encoding="utf-8-sig"))
-        installed = config.get("installed", {})
-        required = ("client_id", "client_secret", "auth_uri", "token_uri", "redirect_uris")
-        forbidden = {"refresh_token", "access_token", "private_key", "private_key_id", "id_token"}
-        def unsafe(value):
-            if isinstance(value, dict):
-                return bool(forbidden.intersection(value)) or any(unsafe(v) for v in value.values())
-            return isinstance(value, list) and any(unsafe(v) for v in value)
-        if not all(installed.get(key) for key in required) or unsafe(config) or "web" in config:
-            raise ValueError()
-    except (OSError, ValueError, TypeError, AttributeError):
-        raise ValueError("유효한 Desktop OAuth 클라이언트 설정만 포함할 수 있습니다. 사용자 토큰·서비스 계정 키는 금지합니다.") from None
-    return {"installed": installed}
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--makensis", type=Path)
-    parser.add_argument("--oauth-client", type=Path, help="배포용 Desktop OAuth 클라이언트 설정 (사용자 토큰 금지)")
     args = parser.parse_args()
     release = ROOT / "dist-releases" / ("v2-"+uuid.uuid4().hex[:12])
     release.mkdir(parents=True)
     stage = release / "build-input"
     stage.mkdir()
     licenses = stage / "licenses"
+    retired = {"google-api-python-client", "google-auth", "google-auth-httplib2", "google-auth-oauthlib",
+               "httplib2", "oauthlib", "requests-oauthlib", "pywin32"}
     for distribution in importlib.metadata.distributions():
+        if distribution.metadata["Name"].lower().replace("_", "-") in retired:
+            continue
         for file in distribution.files or []:
             if ".dist-info/licenses/" in str(file).replace("\\", "/"):
                 source = distribution.locate_file(file)
@@ -61,12 +47,12 @@ def main():
     additions = [(runtime, "resources/ai"), (ROOT / "resources/standard_sheet.json", "resources"),
                  (ROOT / "coatdesk_v2/qml", "coatdesk_v2/qml"),
                  (licenses, "licenses"), (ROOT / "README.md", "."), (ROOT / "THIRD_PARTY_NOTICES.md", ".")]
-    if args.oauth_client:
-        config = desktop_config(args.oauth_client)
-        resource = stage / "resources"
-        resource.mkdir()
-        (resource / "google_oauth.json").write_text(json.dumps(config), encoding="utf-8")
-        additions.append((resource, "resources"))
+    # Some build runtimes load an additional distrust bundle next to ssl.py.
+    # Preserve that policy in the frozen app, where ssl.__file__ is in _internal.
+    distrust_bundle = Path(ssl.__file__).with_name("codex-rejected-cas.pem")
+    if distrust_bundle.is_file():
+        additions.append((distrust_bundle, "."))
+    ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
     environment = os.environ.copy()
     windows = Path(os.environ.get("SystemRoot", "C:/Windows"))
     environment["PATH"] = os.pathsep.join([str(Path(sys.executable).parent), str(Path(sys.base_prefix)),
@@ -77,6 +63,9 @@ def main():
                "--exclude-module", "cv2", "--exclude-module", "matplotlib", "--exclude-module", "scipy",
                "--exclude-module", "pandas", "--exclude-module", "IPython", "--exclude-module", "pytest",
                "--exclude-module", "tensorboard", "--exclude-module", "tkinter", "--collect-all", "torchvision"]
+    for module in ("google", "googleapiclient", "google_auth_httplib2", "google_auth_oauthlib", "httplib2",
+                   "oauthlib", "requests_oauthlib", "win32crypt"):
+        command.extend(["--exclude-module", module])
     for source, destination in additions:
         command.extend(["--add-data", f"{source}{os.pathsep}{destination}"])
     command.append(str(ROOT / "run_v2.py"))
@@ -103,11 +92,11 @@ def main():
         subprocess.run([str(compiler.resolve()), "/INPUTCHARSET", "UTF8", f"/DPAYLOAD={payload}", f"/DOUTPUT={installer}",
                         f"/DUNINSTALL_MANIFEST={manifest}", str(ROOT / "installer/CoatDesk2.nsi")], cwd=ROOT, check=True)
     report = {"version": __version__, "executable": str(payload / "CoatDesk2.exe"), "trained_models": 3,
-              "category_ai": False, "embedded_sheet_template": True,
+              "category_ai": False, "category_default": "자켓", "embedded_sheet_template": True, "excel_export": True,
               "installer": str(installer) if installer.exists() else None,
-              "google_configured": bool(args.oauth_client), "files": len(files),
+              "google_configured": False, "files": len(files),
               "bytes": sum(p.stat().st_size for p in files),
-              "dependencies": {p: importlib.metadata.version(p) for p in ("PySide6-Essentials", "PyInstaller", "numpy", "Pillow")}}
+              "dependencies": {p: importlib.metadata.version(p) for p in ("PySide6-Essentials", "PyInstaller", "numpy", "Pillow", "openpyxl")}}
     if installer.exists():
         report["installer_sha256"] = hashlib.sha256(installer.read_bytes()).hexdigest()
     (release / "build-report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")

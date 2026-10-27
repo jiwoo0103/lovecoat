@@ -1,6 +1,6 @@
-"""Read the approved Excel template; emit sanitized Sheets API data, never a workbook.
+"""Read the approved Excel template; emit sanitized cell/style data, never a workbook.
 
-Run with the bundled document Python (openpyxl). No runtime dependency is added.
+Run with project Python and openpyxl. The JSON is used by the local Excel exporter.
 """
 from __future__ import annotations
 

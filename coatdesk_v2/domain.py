@@ -115,8 +115,9 @@ class Garment:
 
     def apply_analysis(self):
         values = {**self.suggestion.get("candidates", {}), **self.suggestion.get("values", {})}
-        # Category is deliberately manual in this release. Future recognizers can
-        # supply it through this same boundary after a separately approved update.
+        # User-selected default until a category model is separately enabled.
+        if not self.fields.get("category", "").strip():
+            self.set_field("category", "자켓", "default")
         for key in ("gender", "age", "size"):
             value = values.get(key)
             if value and not self.fields.get(key):

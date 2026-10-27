@@ -8,8 +8,7 @@ from pathlib import Path
 from PySide6.QtCore import QAbstractListModel, QModelIndex, QObject, Property, QRunnable, QThreadPool, Qt, QUrl, Signal, Slot
 
 from coatdesk.domain import OPTIONS
-from coatdesk.sheets import spreadsheet_id
-from . import sheets
+from . import excel
 from .domain import FIELDS, Workspace, parse_errors, photo_path, shooting_date, validate_fields, validate_roi
 from .images import image_url
 from .recognition import DEFAULT_THRESHOLDS, RecognitionEngine
@@ -59,7 +58,7 @@ class Work(QRunnable):
             result = self.function(lambda value: self.emit((self.job_id, "progress", value)))
             self.emit((self.job_id, "done", result))
         except Exception as error:
-            message = str(error) if isinstance(error, (ValueError, FileNotFoundError)) else f"작업에 실패했습니다 ({type(error).__name__}). 연결 또는 저장 위치를 확인하세요."
+            message = str(error) if isinstance(error, (ValueError, FileNotFoundError)) else f"작업에 실패했습니다 ({type(error).__name__}). 사진 또는 저장 위치를 확인하세요."
             self.emit((self.job_id, "error", message))
 
 
@@ -67,11 +66,9 @@ class Backend(QObject):
     changed = Signal()
     event = Signal(object)
 
-    def __init__(self, directory: Path, api_factory=None, engine_factory=RecognitionEngine):
+    def __init__(self, directory: Path, engine_factory=RecognitionEngine):
         super().__init__()
         self.repository = Repository(directory)
-        self.api_factory = api_factory or (lambda authorize=False: sheets.GoogleClient(
-            directory, authorize, self.repository.setting("oauth_client", "")))
         self.engine_factory = (lambda: RecognitionEngine(self.repository.setting("ai_thresholds", DEFAULT_THRESHOLDS))) if engine_factory is RecognitionEngine else engine_factory
         self.model = PageModel(self)
         self.workspace: Workspace | None = None
@@ -93,10 +90,8 @@ class Backend(QObject):
         self.photo_size = 150
         self.undo_stack = []
         self.plan = None
-        self.tabs = []
-        self.loaded_book = ""
-        self.target_url = ""
-        self.last_url = ""
+        self.target_path = ""
+        self.last_path = ""
         self.message = "작업공간을 만들거나 최근 작업을 여세요."
         self.error = ""
         self.saved = True
@@ -133,10 +128,13 @@ class Backend(QObject):
                 "filter": self.filter_name, "search": self.search, "current": self._record(current) if current else {},
                 "busy": bool(self.jobs), "recognizing": self.recognizing, "exporting": self.exporting,
                 "message": self.message, "error": self.error, "saved": self.saved, "canUndo": bool(self.undo_stack),
-                "options": OPTIONS, "tabs": self.tabs, "aiThresholds": self.repository.setting("ai_thresholds", DEFAULT_THRESHOLDS), "sheetUrl": self.repository.setting("sheet_url", ""),
+                "options": OPTIONS, "aiThresholds": self.repository.setting("ai_thresholds", DEFAULT_THRESHOLDS),
+                "excelPath": self.repository.setting("excel_path", ""),
                 "planReady": self.plan is not None, "planTitle": self.plan.title if self.plan else "",
+                "planPath": self.plan.path if self.plan else "",
+                "planAddsToFile": self.plan is not None and self.plan.file_digest is not None,
                 "planRows": [[r[0], r[1], r[3], r[5], r[6], r[7]] for r in self.plan.rows] if self.plan else [],
-                "lastUrl": self.last_url, "unresolved": len(self.repository.unresolved_exports(workspace.id)) if workspace else 0}
+                "lastFileUrl": QUrl.fromLocalFile(self.last_path).toString() if self.last_path else ""}
 
     @property
     def page_size(self):
@@ -280,8 +278,7 @@ class Backend(QObject):
             self.current = view.get("current", "")
             self.anchor = ""
             self.selected = set(view.get("selected", []))
-            self.undo_stack, self.plan, self.tabs, self.last_url = self.workspace_undo.get(workspace_id, []), None, [], ""
-            self.loaded_book = ""
+            self.undo_stack, self.plan, self.last_path = self.workspace_undo.get(workspace_id, []), None, ""
             self.page = 0
             self.repository.set_setting("last_workspace", workspace_id)
             self.message, self.error = "작업공간을 열었습니다. 입력 내용은 자동 저장됩니다.", ""
@@ -612,7 +609,9 @@ class Backend(QObject):
                 try:
                     key = engine.key(workspace, g)
                     if not force and key == g.analysis_key and g.analysis_state == "done":
+                        self.repository.edit(workspace.id, [g.code], lambda item: item.apply_analysis())
                         completed += 1
+                        progress(f"분석 · {completed} / {len(garments)}벌 · {g.code} (저장된 결과)")
                         continue
                     suggestion = engine.analyze(workspace, g)
                     state = "done"
@@ -643,98 +642,45 @@ class Backend(QObject):
             self.changed.emit()
 
     @Slot(str)
-    def sheetTargetChanged(self, url):
-        self.target_url = url
+    def excelTargetChanged(self, path):
+        self.target_path = local_path(path)
         self.plan = None
-        try:
-            same_book = spreadsheet_id(url) == self.loaded_book
-        except ValueError:
-            same_book = False
-        if not same_book:
-            self.tabs = []
-            self.loaded_book = ""
         self.changed.emit()
 
-    @Slot(str)
-    def setOAuthClient(self, path):
-        try:
-            self.repository.set_setting("oauth_client", local_path(path))
-            self.message = "관리자 연결 설정을 저장했습니다. Google 로그인을 진행하세요."
-            self.changed.emit()
-        except Exception as error:
-            self._fail(error)
-
-    @Slot()
-    def login(self):
-        if not self.jobs:
-            self._run("브라우저에서 Google 로그인을 완료하세요…", lambda progress: bool(self.api_factory(True)),
-                      lambda value: setattr(self, "message", "Google 로그인 완료"))
-
-    @Slot(str)
-    def loadTabs(self, url):
-        if self.jobs:
-            return
-        try:
-            book = spreadsheet_id(url)
-            self.target_url = url
-            self.repository.set_setting("sheet_url", url)
-            self.plan, self.tabs = None, []
-            def done(tabs):
-                if self.target_url != url:
-                    self.message = "주소가 변경되었습니다. 탭을 다시 불러오세요."
-                    return
-                self.tabs = tabs
-                self.loaded_book = book
-                self.message = "대상 문서를 확인했습니다. 내장 양식으로 새 탭 미리보기를 만드세요."
-            self._run("대상 문서를 확인합니다…", lambda progress: self.api_factory().tabs(book), done)
-        except Exception as error:
-            self._fail(error)
-
-    @Slot(str, int, str)
-    def preview(self, url, source_id, title):
+    @Slot(str, str)
+    def previewExcel(self, path, title):
         if not self.workspace or self.jobs:
             return
-        workspace = self.repository.load(self.workspace.id)
         self.plan = None
         try:
-            book = spreadsheet_id(url)
-            if book != self.loaded_book:
-                raise ValueError("대상 문서를 먼저 연결하세요.")
-            def prepare(progress):
-                api = self.api_factory()
-                return sheets.build_plan(workspace, sheets.builtin_template(), api.tabs(book), book, title)
+            workspace = self.repository.load(self.workspace.id)
+            target = local_path(path.strip())
+            self.target_path = target
             def done(plan):
+                if self.target_path != target:
+                    self.message = "저장 위치가 바뀌었습니다. 미리보기를 다시 만드세요."
+                    return
                 if self.workspace.export_fingerprint() != plan.workspace_digest:
                     raise ValueError("미리보기를 만드는 동안 입력이 바뀌었습니다. 다시 만드세요.")
                 self.plan = plan
-                self.message = f"새 탭 {plan.title} · {len(plan.rows)}벌 · 확인 후 전송하세요."
-            self._run("양식과 전송할 값을 확인합니다…", prepare, done)
+                self.repository.set_setting("excel_path", plan.path)
+                self.message = f"새 시트 {plan.title} · {len(plan.rows)}벌 · 확인 후 저장하세요."
+            self._run("양식과 저장할 값을 확인합니다…",
+                      lambda progress: excel.build_plan(workspace, target, title), done)
         except Exception as error:
             self._fail(error)
 
     @Slot()
-    def send(self):
+    def saveExcel(self):
         if self.jobs or not self.plan:
             return
         plan, self.plan = self.plan, None
         self.exporting = True
-        def done(url):
-            self.last_url = url
-            self.message = "전송 후 입력값을 다시 읽어 확인했습니다. 새 탭을 열 수 있습니다."
-        self._run("새 탭에 전송합니다…", lambda progress: sheets.send(self.repository, plan, self.api_factory()), done, "export")
-
-    @Slot()
-    def checkPreviousExport(self):
-        if self.jobs or not self.workspace:
-            return
-        records = self.repository.unresolved_exports(self.workspace.id)
-        if not records:
-            return
-        def done(url):
-            self.last_url = url
-            self.message = "이전 전송 결과를 확인했습니다." if url else "이전 전송의 새 탭이 생성되지 않았습니다. 새 미리보기를 만들 수 있습니다."
-        self._run("이전 전송 결과를 조회합니다…", lambda progress: sheets.inspect_export(
-            self.repository, records[0]["id"], self.api_factory()), done)
+        def done(path):
+            self.last_path = str(path)
+            self.message = f"엑셀의 새 시트 {plan.title}에 저장하고 입력값을 다시 읽어 확인했습니다."
+        self._run("엑셀 파일에 새 시트를 저장합니다…",
+                  lambda progress: excel.save(self.repository, plan), done, "export")
 
     def shutdown(self):
         self.cancel_event.set()

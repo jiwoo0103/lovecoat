@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>옷 카테고리 · 1차 라벨 검수</title>
+<style>
+:root{color-scheme:light;--ink:#172d29;--muted:#526963;--line:#d9e3dd;--paper:#f5f7f3;--green:#23624c;--soft:#e6f0e9;--amber:#8b5316}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 "Malgun Gothic",system-ui,sans-serif}button,input,select,textarea{font:inherit}button,select,input,textarea{border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink)}button{cursor:pointer;padding:9px 14px}button:hover{background:var(--soft)}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #7cae91;outline-offset:2px}button[aria-pressed=true],.primary{background:var(--green);color:#fff;border-color:var(--green)}button[aria-pressed=true]:hover,.primary:hover{background:#184d3a}button:disabled{opacity:.45;cursor:default}header,main{max-width:1560px;margin:auto;padding:25px 28px}header{padding-bottom:16px}h1{font-size:29px;line-height:1.3;margin:8px 0 12px;letter-spacing:-1px}.eyebrow{font-size:12px;letter-spacing:2px;font-weight:bold;color:var(--green)}p{margin:6px 0}.muted{color:var(--muted)}.summary{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.summary span{background:#fff;padding:5px 11px;border-radius:7px}.toolbar{position:sticky;top:0;z-index:2;max-width:1560px;margin:auto;padding:12px 28px;background:rgba(245,247,243,.98);border-block:1px solid var(--line)}.filters,.actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.actions{margin-top:10px}.filters label{display:flex;align-items:center;gap:7px}.filters select,.filters input{padding:8px;max-width:160px}.filters .check{margin-left:5px}.filters .check input{width:17px;height:17px}.toolbar small{display:block;margin-top:8px;color:var(--muted)}#save-status[data-error=true]{color:#a42e28;font-weight:bold}main{padding-top:18px}.heading-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}#result-count{font-size:19px;font-weight:bold}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}.garment{background:#fff;border:1px solid var(--line);border-radius:13px;overflow:hidden}.photo-button{display:block;width:100%;padding:0;border:0;border-radius:0;background:#eef1ed;height:430px}.photo-button:hover{background:#e7eee8}.photo-button img{width:100%;height:100%;object-fit:contain;display:block}.card-body{padding:14px}.card-title{display:flex;justify-content:space-between;align-items:center;gap:8px}.code{font-size:19px;font-weight:bold;letter-spacing:.5px}.badge{font-size:12px;padding:3px 7px;border-radius:5px;background:var(--soft);color:var(--green)}.badge.warn{background:#fff1d9;color:var(--amber)}.badge.confirmed{background:#dceedd;color:#225830}.metadata{color:var(--muted);font-size:13px;margin:6px 0 9px}.reason{font-size:13px;min-height:61px;margin:8px 0}.card-body select{width:100%;padding:9px}.card-body .confirm{width:100%;margin-top:9px}.status-text{font-size:12px;color:var(--muted);margin-top:7px}.candidate{color:var(--amber);font-size:13px;margin:6px 0}#empty{padding:70px;text-align:center;color:var(--muted)}dialog{width:min(1320px,96vw);max-height:94vh;padding:0;border:0;border-radius:15px;background:#fff;color:var(--ink)}dialog::backdrop{background:rgba(13,26,24,.78)}.dialog-header{display:flex;align-items:center;justify-content:space-between;padding:13px 20px;border-bottom:1px solid var(--line);gap:10px}.dialog-layout{display:grid;grid-template-columns:minmax(0,1fr) 310px;max-height:79vh}.dialog-photo{background:#e9eeeb;display:flex;align-items:center;justify-content:center;min-height:0}.dialog-photo img{max-width:100%;height:76vh;max-height:76vh;object-fit:contain}.dialog-detail{padding:22px;overflow:auto}.dialog-detail h2{margin:0 0 10px}.dialog-detail select,.dialog-detail textarea{width:100%;padding:9px;margin:7px 0}.dialog-detail .primary{width:100%;margin:9px 0}.dialog-detail textarea{min-height:95px;resize:vertical}.dialog-controls{display:flex;gap:8px;margin-top:20px}.dialog-controls button{flex:1}#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:10;padding:12px 20px;background:var(--ink);color:white;border-radius:10px;max-width:90vw;box-shadow:0 6px 30px #0003}details{margin-top:14px;color:var(--muted);font-size:13px}summary{cursor:pointer}details ul{padding-left:20px}#import-file{display:none}footer{max-width:1560px;margin:auto;padding:10px 28px 32px;color:var(--muted);font-size:12px}@media(max-width:1150px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.photo-button{height:390px}}@media(max-width:820px){header,main{padding-inline:16px}.toolbar{padding-inline:16px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.photo-button{height:340px}.dialog-layout{grid-template-columns:1fr;max-height:none}.dialog-photo img{height:55vh}.dialog-detail{padding:16px}dialog{max-height:94vh}}@media(max-width:480px){.grid{grid-template-columns:1fr}.photo-button{height:460px}.toolbar{position:static}h1{font-size:25px}}
+</style>
+</head>
+<body>
+<header>
+ <div class="eyebrow">LOVeCOAT / CATEGORY REVIEW</div>
+ <h1 id="review-title">옷 카테고리, 한 벌씩 기준 맞추기</h1>
+ <p id="criterion-summary">소매 유무와 옷의 기장을 기준으로 분류한 육안 초안입니다.</p>
+ <p class="muted">사진을 눌러 확대하고 분류를 골라 확정하세요. 판독이 애매하면 ‘기타 · 판독 보류’로 모았습니다.</p>
+ <div class="summary" id="summary"></div>
+ <details><summary>이번 라벨과 학습 정답의 차이</summary><ul>
+  <li id="review-context">미확정 초안은 사용자 확인 전이며 학습 정답이 아닙니다.</li>
+  <li>이번 육안 초안에는 학습 모델의 추론을 사용하지 않았으므로 모델 점수는 없습니다.</li>
+  <li>‘기타 · 판독 보류’는 실제 기타 정답이 아닙니다. 분류를 골라 ‘분류 확정’을 누른 항목만 정답으로 구분됩니다.</li>
+  <li>사진에서 차지하는 크기 대신 소매 유무와 옷 자체의 기장·비율로 성인과 아동을 판단했습니다.</li>
+ </ul></details>
+</header>
+<section class="toolbar" aria-label="분류와 검수 도구">
+ <div class="filters">
+  <div class="filters" id="category-filters" role="group" aria-label="카테고리"></div>
+  <label>대상 <select id="age-filter"><option value="all">성인·아동 전체</option><option>성인</option><option>아동</option></select></label>
+  <label>검수 <select id="status-filter"><option value="all">전체 상태</option><option value="unreviewed">미확정</option><option value="confirmed">확인 완료</option><option value="flagged">경계·사진 문제</option></select></label>
+  <label>번호 <input id="code-filter" inputmode="numeric" placeholder="예: 2764" aria-label="옷 번호 검색"></label>
+ </div>
+ <div class="actions">
+  <button class="primary" id="export-json">검수 결과 저장</button>
+  <button id="export-csv">CSV 저장</button>
+  <button id="import-button">검수 결과 불러오기</button><input type="file" id="import-file" accept=".json,application/json">
+  <span id="save-status" role="status">수정은 현재 브라우저에 저장됩니다.</span>
+ </div>
+ <small>파일로 보관하거나 다른 브라우저에서 이어서 보려면 ‘검수 결과 저장’을 눌러 주세요. 원본 사진과 기존 라벨은 바뀌지 않습니다.</small>
+</section>
+<main>
+ <div class="heading-row"><div id="result-count" aria-live="polite"></div><span class="muted">사진 클릭 → 확대 / 분류 수정</span></div>
+ <div class="grid" id="gallery"></div><p id="empty" hidden>조건에 맞는 옷이 없습니다.</p>
+</main>
+<footer>이 페이지는 로컬 검수용입니다. 사진 업로드·모델 학습·앱 데이터 변경을 수행하지 않습니다.</footer>
+<dialog id="detail-dialog" aria-labelledby="detail-title">
+ <div class="dialog-header"><strong id="detail-heading">정면 사진</strong><button id="close-dialog" aria-label="확대 닫기">닫기</button></div>
+ <div class="dialog-layout"><div class="dialog-photo"><img id="detail-image" alt=""></div>
+  <div class="dialog-detail"><h2 id="detail-title"></h2><p class="muted" id="detail-meta"></p><p id="detail-reason"></p><p class="candidate" id="detail-candidate"></p>
+   <label>분류<select id="detail-category"></select></label>
+   <div id="attribute-controls" hidden>
+    <label>소매<select id="detail-sleeves"><option value="yes">있음</option><option value="no">없음</option><option value="unclear">판단 어려움</option></select></label>
+    <label>기장<select id="detail-length"><option value="short">매우 짧음</option><option value="normal">보통 · 엉덩이 전체를 덮지 않음</option><option value="borderline">자켓/코트 경계 · 둘 다 허용</option><option value="long">김 · 엉덩이 전체 덮임</option><option value="very_long">매우 김</option><option value="unclear">판단 어려움</option></select></label>
+   </div>
+   <label>검수 메모<textarea id="detail-note" placeholder="선택 사항"></textarea></label>
+   <button class="primary" id="detail-confirm">분류 확정</button><p class="status-text" id="detail-status"></p>
+   <p class="muted">판독 보류로 모인 ‘기타’도 실제 분류를 확인한 뒤 확정해 주세요.</p>
+   <div class="dialog-controls"><button id="previous-photo">← 이전</button><button id="next-photo">다음 →</button></div>
+  </div>
+ </div>
+</dialog>
+<div id="toast" role="status" hidden></div>
+<script type="application/json" id="review-data">__CATEGORY_REVIEW_DATA__</script>
+<script>
+'use strict';
+const DATA=JSON.parse(document.getElementById('review-data').textContent);
+const CATEGORIES=DATA.categories;
+const records=new Map(DATA.records.map(r=>[r.code,r]));
+const storageKey='lovecoat-category-review:'+DATA.dataset_id;
+const state={category:'all',age:'all',status:'all',query:'',edits:{},detail:null};
+const $=id=>document.getElementById(id);
+const attributeReview=DATA.attribute_review_enabled===true;
+const sleeveNames={yes:'소매 있음',no:'소매 없음',unclear:'소매 불명확'};
+const lengthNames={short:'매우 짧음',normal:'보통 기장',borderline:'기장 경계 · 자켓/코트 모두 허용',long:'긴 기장',very_long:'매우 긴 기장',unclear:'기장 불명확'};
+$('attribute-controls').hidden=!attributeReview;
+$('review-title').textContent=DATA.title;
+document.title=DATA.title;
+$('criterion-summary').textContent=DATA.criterion.summary||'소매 유무와 옷의 기장을 기준으로 분류한 육안 초안입니다.';
+$('review-context').textContent=DATA.review_context||('생성 시 사용자 확정 '+DATA.records.filter(r=>r.review_status==='confirmed').length+'벌. 미확정 초안은 사용자 확인 전이며 학습 정답이 아닙니다.');
+function el(tag,text,className){const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(className)node.className=className;return node;}
+function defaultEdit(record){return {category:record.display_category,confirmed:record.review_status==='confirmed',note:'',...(attributeReview?{sleeves:record.sleeves,length:record.length}:{})};}
+function current(record){return state.edits[record.code]||defaultEdit(record);}
+function validateEdits(value){
+ if(!value||typeof value!=='object'||Array.isArray(value))throw Error('검수 결과 형식이 올바르지 않습니다.');
+ const checked={};
+ for(const [code,edit] of Object.entries(value)){
+  if(!records.has(code)||!edit||typeof edit!=='object'||!CATEGORIES.includes(edit.category)||typeof edit.confirmed!=='boolean'||typeof edit.note!=='string'||edit.note.length>2000)throw Error('다른 자료이거나 잘못된 분류가 포함되어 있습니다.');
+  checked[code]={category:edit.category,confirmed:edit.confirmed,note:edit.note};
+  if(attributeReview){if(!Object.hasOwn(sleeveNames,edit.sleeves)||!Object.hasOwn(lengthNames,edit.length))throw Error('소매·기장 검수 값이 올바르지 않습니다.');checked[code].sleeves=edit.sleeves;checked[code].length=edit.length;}
+ }
+ return checked;
+}
+function storageMessage(text,error=false){$('save-status').textContent=text;$('save-status').dataset.error=String(error);}
+try{const saved=localStorage.getItem(storageKey);if(saved){const payload=JSON.parse(saved);if(payload.dataset_id!==DATA.dataset_id)throw Error('자료가 다릅니다.');state.edits=validateEdits(payload.edits);}}catch(error){storageMessage('자동저장을 불러오지 못했습니다. 검수 파일을 불러오거나 파일로 저장해 주세요.',true);}
+function persist(){try{localStorage.setItem(storageKey,JSON.stringify({dataset_id:DATA.dataset_id,edits:state.edits}));storageMessage('현재 브라우저에 저장됨 · 파일로도 보관해 주세요.');}catch(error){storageMessage('브라우저 자동저장 실패 · 검수 결과를 파일로 저장해 주세요.',true);}}
+let toastTimer;function notify(text){$('toast').textContent=text;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,3200);}
+function update(record,patch){state.edits[record.code]={...current(record),...patch};persist();render();if(state.detail===record.code)renderDetail();}
+function label(record){return !current(record).confirmed&&record.draft_category===null&&current(record).category==='기타'?'기타 · 판독 보류':current(record).category;}
+function visible(){return DATA.records.filter(record=>{const edit=current(record);return (state.category==='all'||edit.category===state.category)&&(state.age==='all'||record.age_group===state.age)&&(state.status==='all'||(state.status==='confirmed'&&edit.confirmed)||(state.status==='unreviewed'&&!edit.confirmed)||(state.status==='flagged'&&record.needs_review&&!edit.confirmed))&&record.code.includes(state.query);});}
+function categoryOptions(select,record){select.replaceChildren();for(const category of CATEGORIES){const option=el('option',category);option.value=category;select.append(option);}select.value=current(record).category;}
+function confirmRecord(record){const e=current(record);if(attributeReview&&e.category!=='기타'){const sleeveOk=e.sleeves===(e.category==='조끼'?'no':'yes'),lengthOk=e.length==='borderline'?e.category!=='조끼':(e.category==='코트'?['long','very_long'].includes(e.length):['short','normal'].includes(e.length));if(!sleeveOk||!lengthOk){notify('사진을 확대해 분류와 소매·기장을 함께 맞춰 주세요.');return;}}update(record,{confirmed:true});notify(record.code+'번 '+current(record).category+'로 확정했습니다.');}
+function render(){
+ const counts=Object.fromEntries(CATEGORIES.map(c=>[c,DATA.records.filter(r=>current(r).category===c).length]));
+ $('category-filters').replaceChildren();
+ for(const category of ['all',...CATEGORIES]){const button=el('button',(category==='all'?'전체':category)+' '+(category==='all'?DATA.records.length:counts[category]));button.type='button';button.dataset.category=category;button.setAttribute('aria-pressed',String(state.category===category));button.onclick=()=>{state.category=category;render();};$('category-filters').append(button);}
+ const confirmed=DATA.records.filter(r=>current(r).confirmed).length;
+ $('summary').replaceChildren(...[['총 '+DATA.records.length+'벌'],['성인 '+DATA.records.filter(r=>r.age_group==='성인').length+' · 아동 '+DATA.records.filter(r=>r.age_group==='아동').length],['확정 '+confirmed+' / 미확정 '+(DATA.records.length-confirmed)],['카테고리 모델 점수 없음']].map(([text])=>el('span',text)));
+ const shown=visible();$('result-count').textContent=(state.category==='all'?'전체':state.category)+' · '+shown.length+'벌';$('empty').hidden=shown.length!==0;$('gallery').replaceChildren();
+ for(const record of shown){
+  const edit=current(record),card=el('article',undefined,'garment');card.dataset.code=record.code;
+  const photo=el('button',undefined,'photo-button');photo.type='button';photo.setAttribute('aria-label',record.code+'번 정면 사진 확대');const image=el('img');image.src=record.photo;image.alt=record.code+'번 '+label(record)+' 정면';image.loading='lazy';image.decoding='async';photo.append(image);photo.onclick=()=>openDetail(record.code);card.append(photo);
+  const body=el('div',undefined,'card-body'),title=el('div',undefined,'card-title');title.append(el('span',record.code, 'code'),el('span',edit.confirmed?'확인 완료':record.needs_review?'확인 필요':'판독 초안','badge'+(edit.confirmed?' confirmed':record.needs_review?' warn':'')));body.append(title,el('p',record.age_group+' · 판넬 '+record.raw_size+' · '+label(record),'metadata'),el('p',record.reason,'reason'));
+  if(attributeReview)body.append(el('p',sleeveNames[edit.sleeves]+' · '+lengthNames[edit.length],'metadata'));
+  if(record.draft_category===null)body.append(el('p','보류 전 후보: '+(record.candidate_category||'미정'),'candidate'));
+  const select=el('select');select.setAttribute('aria-label',record.code+'번 분류');categoryOptions(select,record);select.onchange=()=>update(record,{category:select.value,confirmed:false});body.append(select);
+  const confirm=el('button',edit.confirmed?'확인 완료':attributeReview?'분류·소매·기장 확정':'분류 확정','confirm'+(edit.confirmed?'':' primary'));confirm.type='button';confirm.disabled=edit.confirmed;confirm.onclick=()=>confirmRecord(record);body.append(confirm,el('p',edit.confirmed?'사용자 확정 정답 · '+(record.dataset_split||'기존 자료'):'사용자 미확정 · 학습 정답 아님','status-text'));card.append(body);$('gallery').append(card);
+ }
+}
+function openDetail(code){state.detail=code;renderDetail();$('detail-dialog').showModal();}
+function renderDetail(){const record=records.get(state.detail);if(!record)return;const edit=current(record);$('detail-image').src=record.photo;$('detail-image').alt=record.code+'번 정면 사진';$('detail-heading').textContent=record.code+'번 · '+label(record);$('detail-title').textContent=record.code+'번';$('detail-meta').textContent=record.age_group+' · 판넬 '+record.raw_size;$('detail-reason').textContent=record.reason;$('detail-candidate').textContent=record.draft_category===null?'보류 전 후보: '+(record.candidate_category||'미정'):'';categoryOptions($('detail-category'),record);if(attributeReview){$('detail-sleeves').value=edit.sleeves;$('detail-length').value=edit.length;}$('detail-note').value=edit.note;$('detail-confirm').textContent=edit.confirmed?'확인 완료':attributeReview?'분류·소매·기장 확정':'분류 확정';$('detail-confirm').disabled=edit.confirmed;$('detail-status').textContent=edit.confirmed?'사용자가 확정한 정답입니다.':'현재는 사용자 미확정 초안입니다.';const list=visible().map(r=>r.code),index=list.indexOf(state.detail);$('previous-photo').disabled=index<=0;$('next-photo').disabled=index<0||index>=list.length-1;}
+function moveDetail(delta){const list=visible().map(r=>r.code),index=list.indexOf(state.detail);if(index>=0&&list[index+delta]){state.detail=list[index+delta];renderDetail();}}
+$('detail-category').onchange=()=>update(records.get(state.detail),{category:$('detail-category').value,confirmed:false});
+$('detail-sleeves').onchange=()=>update(records.get(state.detail),{sleeves:$('detail-sleeves').value,confirmed:false});
+$('detail-length').onchange=()=>update(records.get(state.detail),{length:$('detail-length').value,confirmed:false});
+$('detail-note').oninput=()=>update(records.get(state.detail),{note:$('detail-note').value.slice(0,2000)});
+$('detail-confirm').onclick=()=>confirmRecord(records.get(state.detail));
+$('previous-photo').onclick=()=>moveDetail(-1);$('next-photo').onclick=()=>moveDetail(1);
+$('close-dialog').onclick=()=>$('detail-dialog').close();$('detail-dialog').addEventListener('close',()=>{state.detail=null;});
+$('detail-dialog').addEventListener('keydown',event=>{if(['INPUT','TEXTAREA','SELECT'].includes(event.target.tagName))return;if(event.key==='ArrowLeft')moveDetail(-1);if(event.key==='ArrowRight')moveDetail(1);});
+$('age-filter').onchange=()=>{state.age=$('age-filter').value;render();};$('status-filter').onchange=()=>{state.status=$('status-filter').value;render();};$('code-filter').oninput=()=>{state.query=$('code-filter').value.trim().replace(/^0_/, '');render();};
+function exportPayload(){return {schema_version:DATA.schema_version,dataset_id:DATA.dataset_id,exported_at:new Date().toISOString(),criterion:DATA.criterion,review_context:DATA.review_context||'',purpose:DATA.purpose||'category_label_review',attribute_review_enabled:attributeReview,trained_category_model_used:false,edits:state.edits,records:DATA.records.map(record=>{const edit=current(record);return {...record,display_category:edit.category,review_status:edit.confirmed?'confirmed':'unreviewed',training_label:edit.confirmed?edit.category:null,review_note:edit.note,confirmed_by:edit.confirmed?(state.edits[record.code]?'user_review':'user_conversation'):null,...(attributeReview?{sleeves:edit.sleeves,length:edit.length,attribute_review_status:edit.confirmed?'confirmed':'unreviewed',acceptable_categories:edit.length==='borderline'&&['자켓','코트'].includes(edit.category)?['자켓','코트']:[edit.category]}:{})};})};}
+function download(name,text,type){const url=URL.createObjectURL(new Blob([text],{type})),link=el('a');link.href=url;link.download=name;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+$('export-json').onclick=()=>{download('lovecoat-category-review-'+DATA.dataset_id+'.json',JSON.stringify(exportPayload(),null,2),'application/json;charset=utf-8');notify('검수 결과 파일을 저장했습니다. 다운로드 위치를 확인하세요.');};
+function csvCell(value){let text=value===null||value===undefined?'':String(value);if(/^[=+\-@]/.test(text))text="'"+text;return '"'+text.replaceAll('"','""')+'"';}
+$('export-csv').onclick=()=>{const fields=['folder_id','age_group','display_category','review_status','training_label','reason','review_note',...(attributeReview?['dataset_split','sleeves','length','attribute_review_status','acceptable_categories']:[])],rows=exportPayload().records;download('lovecoat-category-review-'+DATA.dataset_id+'.csv','\ufeff'+[fields.map(csvCell).join(','),...rows.map(row=>fields.map(field=>csvCell(Array.isArray(row[field])?JSON.stringify(row[field]):row[field])).join(','))].join('\r\n'),'text/csv;charset=utf-8');notify('CSV 파일을 저장했습니다.');};
+$('import-button').onclick=()=>$('import-file').click();
+$('import-file').onchange=async()=>{const file=$('import-file').files[0];if(!file)return;try{if(file.size>4*1024*1024)throw Error('파일이 너무 큽니다.');const payload=JSON.parse(await file.text());if(payload.schema_version!==DATA.schema_version||payload.dataset_id!==DATA.dataset_id)throw Error('이 사진 묶음에서 저장한 검수 결과가 아닙니다.');const checked=validateEdits(payload.edits);state.edits=checked;persist();render();notify('검수 결과를 불러왔습니다.');}catch(error){notify('불러오기 실패: '+error.message);}finally{$('import-file').value='';}};
+render();
+</script>
+</body>
+</html>
