@@ -30,24 +30,24 @@ ColumnLayout {
         cellHeight: Math.min(240, cellWidth * 0.8)
         model: [{id: "", name: "새 작업 만들기"}].concat(home.appState.recent || [])
         ScrollBar.vertical: ScrollBar {}
-        delegate: Button {
+        delegate: ActionButton {
             required property var modelData
             width: workspaces.cellWidth - 14
             height: workspaces.cellHeight - 14
             objectName: modelData.id ? "homeWorkspace_" + modelData.id : "newWorkspaceTile"
-            enabled: !home.appState.busy
+            enabled: !home.appState.navigationBlocked
             padding: 23
             background: Rectangle {
                 radius: 11
-                color: modelData.id ? (parent.hovered ? "#f2f8f6" : "#ffffff") : "#e8f3f0"
-                border.color: parent.hovered || !modelData.id ? "#74b8ac" : "#e1e7eb"
+                color: modelData.id ? (parent.hovered ? "#f0f5ff" : "#ffffff") : "#eaf1ff"
+                border.color: parent.hovered || !modelData.id ? "#84aaff" : "#e1e7eb"
             }
             contentItem: ColumnLayout {
                 spacing: 12
                 Label {
                     text: modelData.id ? "작업" : "+"
                     font.pixelSize: modelData.id ? 12 : 42
-                    color: "#19786f"
+                    color: "#2563eb"
                     Layout.alignment: modelData.id ? Qt.AlignLeft : Qt.AlignHCenter
                 }
                 Label {
@@ -56,7 +56,7 @@ ColumnLayout {
                     horizontalAlignment: modelData.id ? Text.AlignLeft : Text.AlignHCenter
                     font.pixelSize: 16
                     font.bold: true
-                    color: modelData.id ? "#203541" : "#19786f"
+                    color: modelData.id ? "#203541" : "#2563eb"
                     elide: Text.ElideRight
                 }
                 Label {
@@ -72,7 +72,7 @@ ColumnLayout {
             onClicked: {
                 var key = modelData.id
                 home.forceActiveFocus()
-                if (key) home.controller.openWorkspace(key)
+                if (key) home.controller.requestWorkspace(key)
                 else home.createRequested()
             }
         }

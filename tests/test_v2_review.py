@@ -30,7 +30,7 @@ def test_low_score_candidates_fill_blanks_and_require_explicit_review():
 
 def test_child_default_and_review_survive_repository_restart_and_undo(tmp_path):
     repository = Repository(tmp_path)
-    garment = Garment("0001", {}, fields={"category": "조끼", "size": "100/110"})
+    garment = Garment("0001", {}, fields={"category": "조끼", "size": "S"})
     garment.set_field("age", "유아동")
     assert garment.fields["gender"] == "남성"
     assert garment.pending_review == ["gender"]

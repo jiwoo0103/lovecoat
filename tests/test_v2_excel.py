@@ -265,17 +265,14 @@ def test_recheck_detects_invalid_candidate_before_original_is_replaced(prepared,
     assert target.read_bytes() == before
 
 
-def test_user_size_is_written_as_text_and_never_executed_as_a_formula(prepared):
+def test_disallowed_size_formula_is_preserved_but_blocks_export(prepared):
     repo, key, target = prepared
     value = '=HYPERLINK("https://example.invalid","text")'
     repo.edit(key, ["0001"], lambda g: g.set_field("size", value))
-    excel.save(repo, excel.build_plan(repo.load(key), target, "20261002"))
-    book = load_workbook(target)
-    try:
-        assert book["20261002"]["I3"].value == value
-        assert book["20261002"]["I3"].data_type == "s"
-    finally:
-        book.close()
+    assert repo.load(key).garments[0].fields["size"] == value
+    with pytest.raises(ValueError, match="필수 입력"):
+        excel.build_plan(repo.load(key), target, "20261002")
+    assert not target.exists()
 
 
 def test_unsupported_corrupt_signed_and_structure_locked_files_are_not_modified(prepared):

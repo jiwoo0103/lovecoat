@@ -105,16 +105,20 @@ def test_home_tiles_create_modal_and_workspace_tabs_restore_view(ui):
     created = backend.workspace.id
     click(window, window.findChild(QObject, "homeButton"))
     click(window, visual(window.contentItem(), "homeWorkspace_" + keys[0]))
+    wait_for(lambda: not backend.jobs)
     backend.setSearch("0002")
     backend.setMode("photos")
     click(window, window.findChild(QObject, "homeButton"))
     click(window, visual(window.contentItem(), "homeWorkspace_" + keys[1]))
+    wait_for(lambda: not backend.jobs)
     assert backend.search == "" and backend.mode == "review"
     click(window, visual(window.contentItem(), "workspaceTab_" + keys[0]))
+    wait_for(lambda: not backend.jobs)
     assert backend.search == "0002" and backend.mode == "photos"
     assert {r["id"] for r in backend.state["openWorkspaces"]} == {created, *keys}
     click(window, window.findChild(QObject, "homeButton"))
     click(window, visual(window.contentItem(), "workspaceTab_" + keys[0]))
+    wait_for(lambda: not backend.jobs)
     assert len(backend.state["openWorkspaces"]) == 3
     click(window, window.findChild(QObject, "addWorkspaceTab"))
     click(window, window.findChild(QObject, "newWorkspaceTabAction"))
@@ -145,15 +149,13 @@ def test_only_required_cards_confirm_and_editing_keeps_review_pending(ui):
     assert child.property("displayText") == "남아"
     assert not visual(window.contentItem(), "confirm_0003").property("visible")
     pending = visual(window.contentItem(), "confirm_0002")
-    field = visual(window.contentItem(), "size_0002_text")
+    field = visual(window.contentItem(), "size_0002_combo")
     # The button belongs immediately below the fields, within the existing card.
     field_top = field.mapToScene(QPointF(0, 0)).y()
     confirm_top = pending.mapToScene(QPointF(0, 0)).y()
     assert 0 < confirm_top - field_top < 160
     assert pending.mapToScene(QPointF(0, pending.height())).y() < window.height() - 48
-    click(window, field)
-    QTest.keyClick(window, Qt.Key_A, Qt.ControlModifier)
-    type_text(window, "XL")
+    select_option(window, field, 6)
     click(window, pending)
     garment = backend.repository.load(keys[0]).garments[1]
     assert garment.fields["size"] == "XL"
@@ -166,9 +168,7 @@ def test_only_required_cards_confirm_and_editing_keeps_review_pending(ui):
     # A normal populated garment requires no confirmation and no result notice.
     assert backend.repository.load(keys[0]).garments[2].export_ready
     # Leaving a typed field for a photo must save the value and still select it.
-    click(window, visual(window.contentItem(), "size_0003_text"))
-    QTest.keyClick(window, Qt.Key_A, Qt.ControlModifier)
-    type_text(window, "S")
+    select_option(window, visual(window.contentItem(), "size_0003_combo"), 3)
     click(window, visual(window.contentItem(), "photo_0004"))
     assert backend.repository.load(keys[0]).garments[2].fields["size"] == "S"
     assert backend.selected == {"0004"}
@@ -211,8 +211,8 @@ def test_three_classification_rows_combine_with_search_and_review(ui):
 def test_workspace_navigation_is_disabled_while_background_job_is_running(ui):
     backend, window, keys, _ = ui
     backend.openWorkspace(keys[0])
-    backend.jobs[999] = object()
-    backend.changed.emit()
+    backend.jobs[999] = (None, "normal")
+    backend._notify()
     QTest.qWait(70)
     try:
         for name in ("homeButton", "addWorkspaceTab", "workspaceMenuButton", "analyzeButton"):
@@ -220,4 +220,4 @@ def test_workspace_navigation_is_disabled_while_background_job_is_running(ui):
         assert not visual(window.contentItem(), "workspaceTab_" + keys[0]).property("enabled")
     finally:
         backend.jobs.pop(999)
-        backend.changed.emit()
+        backend._notify()

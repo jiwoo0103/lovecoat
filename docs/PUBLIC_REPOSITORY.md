@@ -12,7 +12,7 @@
 ## 로컬에만 보관하는 파일
 
 - 원본/복사 사진, 라벨, 실험 결과·검수 HTML: `model-results/`, `.local/`, 개인 사진 폴더.
-- 학습 가중치 `.pt`와 기타 모델 바이너리. 현재 모델 3개도 Git에서 제외.
+- 학습 가중치 `.pt`와 기타 모델 바이너리. 현재 모델 4개와 카테고리 참조 조각/마스크도 Git에서 제외.
 - `dist-releases/` 등의 설치파일·실행파일, 빌드 캐시, 가상환경과 내려받은 도구.
 - 작업 DB, 작업 JSON, 로그인 토큰, OAuth 연결 JSON, 개인 키, `.env` 파일.
 
@@ -36,7 +36,7 @@
 
 ## 새 개발 PC에서 필요한 별도 파일
 
-소스 clone에는 `.venv`, NSIS, 사진·라벨, 빌드, 모델 3개가 포함되지 않습니다.
+소스 clone에는 `.venv`, NSIS, 사진·라벨, 빌드, 모델 4개·카테고리 참조 자산이 포함되지 않습니다.
 이전 2.1의 실행 차단 오류와 현재 릴리스의 검증 결과는 [진행 요약](PROGRESS_SUMMARY.md)에서 구분합니다.
 
 AI 분석/설치 빌드를 재구성하려면 다음이 추가로 필요합니다.
@@ -44,7 +44,8 @@ AI 분석/설치 빌드를 재구성하려면 다음이 추가로 필요합니�
 1. Python 3.12와 `requirements.txt`/`requirements-dev.txt`의 고정 의존성을 프로젝트 내부 가상환경에 준비.
 2. CPU용 PyTorch `2.11.0+cpu`, torchvision `0.26.0+cpu`를 같은 실행/빌드 환경에 준비. CUDA 비교 실험용 `requirements-ab.txt`와 구분.
 3. 보관한 `detector.pt`, `panel-shape.pt`, `panel-size.pt`를 `resources/ai/`에 복원하고 manifest 해시를 확인.
-4. 설치 빌드는 프로젝트 내부의 NSIS 제작 도구가 추가로 필요. 일반 사용 PC에 Python/NSIS를 따로 설치하는 구성은 아님.
-5. 엑셀 저장은 `requirements.txt`에 고정한 openpyxl/et-xmlfile을 포함하며 Excel 설치나 Google 연결 설정이 필요하지 않음.
+4. 최종 카테고리 가중치와 고정 template 참조 자산을 별도로 준비하고 `scripts/prepare_category_runtime.py --model-dir <최종 실험 폴더> --references <고정 references 폴더> --output resources/ai/category`로 복원합니다. 모델 SHA-256은 `d48df504df994fa3414dba4e4efd979cd0080162883e7dd66b703e3d63b569fa`입니다. 비밀이 없는 실행 정책·해시 manifest만 Git에 보존합니다.
+5. 설치 빌드는 프로젝트 내부의 NSIS 제작 도구가 추가로 필요. 일반 사용 PC에 Python/NSIS를 따로 설치하는 구성은 아님.
+6. 엑셀 저장은 `requirements.txt`에 고정한 openpyxl/et-xmlfile을 포함하며 Excel 설치나 Google 연결 설정이 필요하지 않음.
 
 학습·평가 재현에는 별도 보관한 사진·라벨·분할과 실험 설정도 필요합니다. 코드만으로 기존 실험 결과가 즉시 재현된다고 보장하지 않습니다.

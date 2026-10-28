@@ -8,10 +8,10 @@ OutFile "${OUTPUT}"
 InstallDir "$LOCALAPPDATA\Programs\CoatDesk"
 RequestExecutionLevel user
 SetCompressor /FINAL zlib
-VIProductVersion "2.3.0.0"
+VIProductVersion "2.4.1.0"
 VIAddVersionKey /LANG=1042 "ProductName" "외투 작업실 2"
 VIAddVersionKey /LANG=1042 "FileDescription" "외투 작업실 2 설치 프로그램"
-VIAddVersionKey /LANG=1042 "FileVersion" "2.3.0"
+VIAddVersionKey /LANG=1042 "FileVersion" "2.4.1"
 VIAddVersionKey /LANG=1042 "LegalCopyright" "CoatDesk"
 
 Var Sandbox
@@ -36,13 +36,21 @@ Var Sandbox
 !macroend
 
 Function .onInit
-  !insertmacro CheckRunning
   StrCpy $Sandbox "0"
   ${GetParameters} $0
   ClearErrors
   ${GetOptions} $0 "/SANDBOX" $1
   ${IfNot} ${Errors}
     StrCpy $Sandbox "1"
+  ${EndIf}
+  ${If} $Sandbox == "0"
+    !insertmacro CheckRunning
+  ${Else}
+    ; A sandbox may coexist with a running app only in a fresh folder.
+    IfFileExists "$INSTDIR\*.*" 0 sandbox_fresh
+    MessageBox MB_OK|MB_ICONSTOP "검증 설치는 비어 있는 새 폴더를 선택하세요."
+    Abort
+    sandbox_fresh:
   ${EndIf}
 FunctionEnd
 
@@ -61,7 +69,7 @@ Section "프로그램 (필수)" Main
     CreateShortcut "$SMPROGRAMS\외투 작업실 2\호환 모드.lnk" "$INSTDIR\CoatDesk2.exe" "--software-rendering"
     CreateShortcut "$SMPROGRAMS\외투 작업실 2\프로그램 제거.lnk" "$INSTDIR\Uninstall.exe"
     WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\CoatDeskV2" "DisplayName" "외투 작업실 2"
-    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\CoatDeskV2" "DisplayVersion" "2.3.0"
+    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\CoatDeskV2" "DisplayVersion" "2.4.1"
     WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\CoatDeskV2" "UninstallString" '$\"$INSTDIR\Uninstall.exe$\"'
     WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\CoatDeskV2" "InstallLocation" "$INSTDIR"
     WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\CoatDeskV2" "NoModify" 1

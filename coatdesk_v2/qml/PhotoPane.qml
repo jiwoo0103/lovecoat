@@ -3,6 +3,7 @@ import QtQuick.Controls
 
 Rectangle {
     id: pane
+    property real renderScale: 1
     property string photo: ""
     property int zoom: 100
     signal selected(int modifiers)
@@ -17,8 +18,8 @@ Rectangle {
         anchors.centerIn: parent
         width: parent.width * pane.zoom / 100
         height: parent.height * pane.zoom / 100
-        sourceSize.width: Math.max(240, Math.min(1800, width * Screen.devicePixelRatio))
-        sourceSize.height: Math.max(240, Math.min(1800, height * Screen.devicePixelRatio))
+        sourceSize.width: Math.max(240, Math.min(1800, width * pane.renderScale * Screen.devicePixelRatio))
+        sourceSize.height: Math.max(240, Math.min(1800, height * pane.renderScale * Screen.devicePixelRatio))
         fillMode: Image.PreserveAspectFit
         asynchronous: true
         autoTransform: true

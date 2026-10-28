@@ -28,7 +28,7 @@ ColumnLayout {
     RowLayout {
         Layout.fillWidth: true
         TextField { id: sourcePath; implicitHeight: 34; objectName: "workspaceSource"; Layout.fillWidth: true; placeholderText: "0_0001 같은 폴더가 들어 있는 위치" }
-        Button { text: "찾기"; implicitHeight: 34; enabled: !form.busy; onClicked: sourceFolder.open() }
+        ActionButton { text: "찾기"; implicitHeight: 34; enabled: !form.busy; onClicked: sourceFolder.open() }
     }
     RowLayout {
         Layout.fillWidth: true
@@ -53,7 +53,7 @@ ColumnLayout {
         color: "#64748b"
         font.pixelSize: 12
     }
-    Button {
+    ActionButton {
         objectName: "createWorkspaceButton"
         Layout.fillWidth: true
         Layout.topMargin: 6

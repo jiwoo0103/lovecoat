@@ -18,6 +18,7 @@ vendor/tesseract/
 
 # Local training/validation data and generated model artifacts.
 model-results/
+resources/ai/category/references/
 datasets/
 photos/
 *.pt

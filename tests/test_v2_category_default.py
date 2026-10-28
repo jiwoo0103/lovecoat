@@ -5,19 +5,19 @@ from test_v2_workspace import application, wait_for
 
 
 def suggestion(**changes):
-    return {"values": {"gender": "여성", "age": "성인", "size": "M"}, **changes}
+    return {"values": {"gender": "여성", "age": "성인", "size": "M"}, "category": {"display_category": "자켓", "candidate": "자켓", "needs_review": False}, **changes}
 
 
-def test_default_jacket_removes_only_missing_category_status():
+def test_category_ai_completes_missing_category():
     garment = Garment("0001", {}, suggestion=suggestion())
     garment.apply_analysis()
     assert garment.fields["category"] == "자켓"
-    assert garment.field_sources["category"] == "default"
+    assert garment.field_sources["category"] == "ai"
     assert garment.status == "확인 완료"
     assert garment.export_ready and not garment.confirmed
 
 
-def test_jacket_default_keeps_uncertain_and_missing_values_pending():
+def test_category_ai_keeps_uncertain_and_missing_values_pending():
     uncertain = Garment("0001", {}, suggestion=suggestion(held=["사이즈"]))
     uncertain.apply_analysis()
     assert uncertain.fields["category"] == "자켓"
@@ -25,7 +25,7 @@ def test_jacket_default_keeps_uncertain_and_missing_values_pending():
     assert uncertain.status == "확인 필요"
     missing = Garment("0002", {}, suggestion={"values": {}})
     missing.apply_analysis()
-    assert missing.fields == {"category": "자켓"}
+    assert missing.fields == {}
     assert missing.status == "확인 필요" and not missing.export_ready
 
 
@@ -36,7 +36,7 @@ def test_analysis_preserves_manually_entered_category():
     assert garment.export_ready
 
 
-def test_cached_analysis_backfills_default_without_rerunning_model(tmp_path):
+def test_cached_analysis_applies_category_result_without_rerunning_model(tmp_path):
     app = application()
     repo = Repository(tmp_path / "data")
     garments = [Garment("0001", {}, suggestion=suggestion(), analysis_key="cached", analysis_state="done"),

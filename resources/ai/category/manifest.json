@@ -1,0 +1,14 @@
+{
+  "version": "2.4.1",
+  "files": {
+    "model.pt": "d48df504df994fa3414dba4e4efd979cd0080162883e7dd66b703e3d63b569fa",
+    "policy.json": "3aa79d94fc8e308b00dad3cf5f8650d005327e045fc4a3872370f34f7b6ff650",
+    "references/0001-mask.png": "c31111361d72abfaa1ff65db87e404a5a600eea62fcb2cbe11a5af16dc0c995c",
+    "references/0001.png": "7e4433741567999cdc1401d5bfaed6b51ffa2854d27b225b7b42cf56966fc942",
+    "references/0039-mask.png": "ab9d0b3f0f261ddbbacf2b9180dc5b0a9ded42cd8389326237bbc21a8273023e",
+    "references/0039.png": "152f721f8cd46c04681c1b25b14a329744940f70f3af25d27027077df3900fec",
+    "references/1185-mask.png": "e3d8c099016a475cf3b9b979afd38bf113c4d4760cc0cf9d9140b312e258aa77",
+    "references/1185.png": "71be590538d310979882619ccf34d7871f28b873026bd58d853e4897c4853dc6",
+    "references/references.json": "da2a77d6a218c5204ace12c8e44f713a064d67987cca3bf0557150ce3a98259a"
+  }
+}

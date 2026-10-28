@@ -1,0 +1,24 @@
+{
+  "version": "category-v241-configurable-s90-l90",
+  "thresholds": {
+    "sleeve": 0.9,
+    "length": 0.9
+  },
+  "input_side": 320,
+  "normalization_mean": [
+    0.485,
+    0.456,
+    0.406
+  ],
+  "normalization_std": [
+    0.229,
+    0.224,
+    0.225
+  ],
+  "preprocessing": "whole-panel-template-v2-mask8px-at1080-letterbox320-v1",
+  "training_policy_unchanged": true,
+  "scores_calibrated": false,
+  "configurable": [
+    "sleeve"
+  ]
+}

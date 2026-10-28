@@ -8,7 +8,7 @@ import os
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QLockFile, QStandardPaths, QTimer, QUrl
+from PySide6.QtCore import QLockFile, QStandardPaths, QTimer, QUrl, Qt
 from PySide6.QtGui import QFontDatabase, QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtQuickControls2 import QQuickStyle
@@ -16,6 +16,12 @@ from PySide6.QtQuickControls2 import QQuickStyle
 from .backend import Backend
 from . import __version__
 from .images import Photos
+
+
+def force_light_theme(app):
+    hints = app.styleHints()
+    hints.setColorScheme(Qt.ColorScheme.Light)
+    hints.colorSchemeChanged.connect(lambda scheme: hints.setColorScheme(Qt.ColorScheme.Light) if scheme != Qt.ColorScheme.Light else None)
 
 
 def main():
@@ -26,8 +32,13 @@ def main():
     parser.add_argument("--range-end", type=int, default=13)
     parser.add_argument("--smoke-test", type=Path)
     parser.add_argument("--smoke-ocr", action="store_true", help="검증용: 불러온 사진의 OCR도 실행")
+    parser.add_argument("--smoke-scope", nargs=2, type=int, metavar=("START", "END"), help="검증용: 작업 범위 변경")
+    parser.add_argument("--smoke-errors", default="", help="검증용: 변경 범위의 에러번호")
+    parser.add_argument("--smoke-export", type=Path, help="검증용: 검수 조건을 충족할 때만 엑셀 저장")
     parser.add_argument("--software-rendering", action="store_true", help="하드웨어 가속 없이 실행")
     args = parser.parse_args()
+    if (args.smoke_scope or args.smoke_export) and not args.smoke_test:
+        parser.error("--smoke-scope/--smoke-export requires --smoke-test")
     if args.software_rendering:
         os.environ["QT_QUICK_BACKEND"] = "software"
     if sys.platform == "win32":
@@ -42,7 +53,8 @@ def main():
     app.setApplicationName("CoatDesk v2")
     app.setOrganizationName("CoatDesk")
     app.setApplicationVersion(__version__)
-    if not QFontDatabase.families():
+    force_light_theme(app)
+    if Path("C:/Windows/Fonts/malgun.ttf").is_file():
         QFontDatabase.addApplicationFont("C:/Windows/Fonts/malgun.ttf")
     QQuickStyle.setStyle("Basic")
     directory = args.data_dir or Path(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.GenericDataLocation)) / "CoatDesk/v2"
@@ -64,25 +76,54 @@ def main():
         return 1
     if args.source:
         backend.createWorkspace("사진 검증", "", str(args.source), str(args.range_start), str(args.range_end), "")
+    elif args.smoke_test:
+        last = backend.repository.setting("last_workspace", "")
+        if last:
+            backend.openWorkspace(last)
     if args.smoke_test:
         ocr_started = False
+        scope_started = False
+        export_stage = 0
         def capture(engine=engine):
-            nonlocal ocr_started
+            nonlocal ocr_started, scope_started, export_stage
             if backend.jobs:
                 QTimer.singleShot(200, capture)
                 return
-            if args.smoke_ocr and not ocr_started and backend.workspace:
+            if args.smoke_scope and not scope_started and backend.workspace:
+                scope_started = True
+                backend.updateWorkspaceScope(str(args.smoke_scope[0]), str(args.smoke_scope[1]), args.smoke_errors)
+                QTimer.singleShot(200, capture)
+                return
+            if args.smoke_ocr and not ocr_started and backend.workspace and not backend.error:
                 ocr_started = True
                 backend.startAnalysis(False)
                 QTimer.singleShot(200, capture)
                 return
+            if args.smoke_export and backend.workspace and not backend.error:
+                if export_stage == 0:
+                    export_stage = 1
+                    backend.previewExcel(str(args.smoke_export), backend.workspace.shooting_date.replace("-", ""))
+                    QTimer.singleShot(200, capture)
+                    return
+                if export_stage == 1:
+                    export_stage = 2
+                    if backend.plan:
+                        backend.saveExcel()
+                        QTimer.singleShot(200, capture)
+                        return
             args.smoke_test.parent.mkdir(parents=True, exist_ok=True)
             success = engine.rootObjects()[0].grabWindow().save(str(args.smoke_test))
             report = {"ok": success and not messages and not backend.error, "warnings": messages,
                       "error": backend.error, "counts": backend.state["counts"], "version": __version__}
+            if args.smoke_scope:
+                report["scope"] = [backend.state["start"], backend.state["end"]]
+                report["empty_photo_codes"] = backend.state["emptyPhotoCodes"]
+                report["ok"] &= report["scope"] == args.smoke_scope
+            if args.smoke_export:
+                report["excel_saved"] = bool(backend.last_path and Path(backend.last_path).is_file())
+                report["ok"] &= report["excel_saved"]
             if args.smoke_ocr:
-                from .recognition import RecognitionEngine
-                report["ocr_runtime"] = bool(RecognitionEngine().executable)
+                report["ocr_runtime"] = bool(backend._recognition_engine and backend._recognition_engine.executable)
                 report["ocr"] = [{"code": g.code, "state": g.analysis_state, "values": g.suggestion.get("values", {})}
                                  for g in backend.workspace.active] if backend.workspace else []
                 report["ok"] &= report["ocr_runtime"] and all(g["state"] == "done" for g in report["ocr"]) and bool(report["ocr"])

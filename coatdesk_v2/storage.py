@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .domain import EDITABLE, Garment, Workspace, parse_errors, shooting_date
+from .category import DEFAULT_CATEGORY_THRESHOLDS
 
 SCHEMA_VERSION = 1
 
@@ -29,6 +30,18 @@ class Repository:
         directory.mkdir(parents=True, exist_ok=True)
         self.path = directory / "workspaces.sqlite3"
         self.initialize()
+        self.migrate_v24()
+
+    def migrate_v24(self):
+        with self.connection() as db:
+            if db.execute("SELECT 1 FROM settings WHERE key='v24_thresholds_migrated'").fetchone():
+                return
+            if db.execute("SELECT 1 FROM garments LIMIT 1").fetchone():
+                backup = self.directory / f"before-v24-{uuid.uuid4().hex[:8]}.sqlite3"
+                with sqlite3.connect(backup) as destination:
+                    db.backup(destination)
+            db.execute("INSERT OR REPLACE INTO settings VALUES('ai_thresholds',?)", (encode({"panel": .9, "shape": .9, "size": .9}),))
+            db.execute("INSERT INTO settings VALUES('v24_thresholds_migrated','true')")
 
     @contextmanager
     def connection(self):
@@ -96,7 +109,9 @@ class Repository:
     def recent(self) -> list[dict]:
         with self.connection() as db:
             return [dict(row) for row in db.execute(
-                "SELECT w.*, COUNT(g.code) AS count FROM workspaces w LEFT JOIN garments g ON w.id=g.workspace_id "
+                "SELECT w.*, SUM(CASE WHEN g.number BETWEEN w.start AND w.end "
+                "AND COALESCE(json_extract(g.payload,'$.source_present'),1) THEN 1 ELSE 0 END) AS count "
+                "FROM workspaces w LEFT JOIN garments g ON w.id=g.workspace_id "
                 "GROUP BY w.id ORDER BY w.updated DESC")]
 
     def load(self, workspace_id: str) -> Workspace:
@@ -106,6 +121,10 @@ class Repository:
                 raise ValueError("작업공간을 찾을 수 없습니다.")
             garments = [Garment(**json.loads(r[0])) for r in db.execute(
                 "SELECT payload FROM garments WHERE workspace_id=? ORDER BY number", (workspace_id,))]
+            thresholds, category_thresholds = self._thresholds(db)
+            for garment in garments:
+                if garment.suggestion:
+                    garment.rethreshold(thresholds, category_thresholds)
             return Workspace(row["id"], row["name"], row["shooting_date"], row["source"], row["start"], row["end"],
                              json.loads(row["errors"]), garments, json.loads(row["view"]),
                              json.loads(row["templates"]), row["revision"])
@@ -113,18 +132,39 @@ class Repository:
     def edit(self, workspace_id: str, codes: list[str], change) -> dict:
         previous = {}
         with self.connection() as db:
+            thresholds, category_thresholds = self._thresholds(db)
             for code in dict.fromkeys(codes):
                 row = db.execute("SELECT payload FROM garments WHERE workspace_id=? AND code=?",
                                  (workspace_id, code)).fetchone()
                 if row is None:
                     raise ValueError(f"옷을 찾을 수 없습니다: {code}")
                 garment = Garment(**json.loads(row[0]))
+                if garment.suggestion:
+                    garment.rethreshold(thresholds, category_thresholds)
                 previous[code] = {key: copy.deepcopy(getattr(garment, key)) for key in EDITABLE}
                 change(garment)
                 db.execute("UPDATE garments SET payload=? WHERE workspace_id=? AND code=?",
                            (encode(garment.to_dict()), workspace_id, code))
             db.execute("UPDATE workspaces SET revision=revision+1,updated=? WHERE id=?", (now(), workspace_id))
         return previous
+
+    def load_garments(self, workspace_id, codes):
+        if not codes:
+            return []
+        with self.connection() as db:
+            placeholders = ",".join("?" for _ in codes)
+            garments = [Garment(**json.loads(r[0])) for r in db.execute(
+                f"SELECT payload FROM garments WHERE workspace_id=? AND code IN ({placeholders})", [workspace_id, *codes])]
+            thresholds, category_thresholds = self._thresholds(db)
+            for garment in garments:
+                if garment.suggestion:
+                    garment.rethreshold(thresholds, category_thresholds)
+            return garments
+
+    def _thresholds(self, db):
+        settings = {r["key"]: json.loads(r["value"]) for r in db.execute(
+            "SELECT key,value FROM settings WHERE key IN ('ai_thresholds','category_thresholds')")}
+        return settings["ai_thresholds"], settings.get("category_thresholds", dict(DEFAULT_CATEGORY_THRESHOLDS))
 
     def undo(self, workspace_id: str, previous: dict):
         def restore(garment):
@@ -140,14 +180,52 @@ class Repository:
                 db.execute(f"UPDATE workspaces SET {key}=?,revision=revision+1,updated=? WHERE id=?",
                            (value if key == "source" else encode(value), now(), workspace_id))
 
+    def change_scope(self, workspace_id, start, end, error_text, scanned):
+        if start < 0 or end < start or end-start > 100_000:
+            raise ValueError("번호 범위는 시작 ≤ 끝, 최대 100,001개로 입력하세요.")
+        errors = parse_errors(error_text, start, end)
+        found = {int(g.code): g for g in scanned}
+        if len(found) != len(scanned) or any(not start <= n <= end for n in found):
+            raise ValueError("사진 검사 결과의 번호 범위를 확인하세요.")
+        with self.connection() as db:
+            if not db.execute("SELECT 1 FROM workspaces WHERE id=?", (workspace_id,)).fetchone():
+                raise ValueError("작업공간을 찾을 수 없습니다.")
+            existing = {r["number"]: Garment(**json.loads(r["payload"])) for r in db.execute(
+                "SELECT number,payload FROM garments WHERE workspace_id=?", (workspace_id,))}
+            for number, garment in existing.items():
+                if start <= number <= end and number not in found:
+                    garment.source_present = False
+                    db.execute("UPDATE garments SET payload=? WHERE workspace_id=? AND number=?",
+                               (encode(garment.to_dict()), workspace_id, number))
+            for number, photo_record in found.items():
+                garment = existing.get(number)
+                if garment is not None:
+                    if garment.code != photo_record.code:
+                        raise ValueError(f"{number}번의 기존 외투코드와 사진 폴더 표기가 다릅니다. 폴더 이름을 확인하세요.")
+                    if garment.photos != photo_record.photos:
+                        garment.analysis_key, garment.analysis_state = "", "pending"
+                    garment.photos = photo_record.photos
+                    garment.issues = photo_record.issues
+                    garment.source_present = True
+                    db.execute("UPDATE garments SET payload=? WHERE workspace_id=? AND number=?",
+                               (encode(garment.to_dict()), workspace_id, number))
+                else:
+                    db.execute("INSERT INTO garments VALUES(?,?,?,?)",
+                               (workspace_id, photo_record.code, number, encode(photo_record.to_dict())))
+            db.execute("UPDATE workspaces SET start=?,end=?,errors=?,revision=revision+1,updated=? WHERE id=?",
+                       (start, end, encode(errors), now(), workspace_id))
+
     def setting(self, key: str, default=None):
         with self.connection() as db:
             row = db.execute("SELECT value FROM settings WHERE key=?", (key,)).fetchone()
             return json.loads(row[0]) if row else default
 
     def set_setting(self, key: str, value):
+        self.set_settings({key: value})
+
+    def set_settings(self, values):
         with self.connection() as db:
-            db.execute("INSERT OR REPLACE INTO settings VALUES(?,?)", (key, encode(value)))
+            db.executemany("INSERT OR REPLACE INTO settings VALUES(?,?)", [(key, encode(value)) for key, value in values.items()])
 
     def record_export(self, export_id: str, workspace_id: str, status: str, payload: dict):
         with self.connection() as db:

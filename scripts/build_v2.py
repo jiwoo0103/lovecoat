@@ -16,6 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from coatdesk_v2 import __version__  # noqa: E402 - direct script invocation needs the repository root
+from coatdesk_v2.category import POLICY_VERSION, DEFAULT_CATEGORY_THRESHOLDS  # noqa: E402
 
 
 def main():
@@ -33,15 +34,23 @@ def main():
         if distribution.metadata["Name"].lower().replace("_", "-") in retired:
             continue
         for file in distribution.files or []:
-            if ".dist-info/licenses/" in str(file).replace("\\", "/"):
+            normalized = str(file).replace("\\", "/")
+            legacy_notice = ".dist-info/" in normalized and Path(normalized).name.lower().startswith(("license", "copying", "notice"))
+            if ".dist-info/licenses/" in normalized or legacy_notice:
                 source = distribution.locate_file(file)
                 if source.is_file():
-                    target = licenses / distribution.metadata["Name"] / str(file).split("licenses/", 1)[-1]
+                    relative = normalized.split("licenses/", 1)[-1] if "/licenses/" in normalized else Path(normalized).name
+                    target = licenses / distribution.metadata["Name"] / relative
                     target.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(source, target)
     runtime = ROOT / "resources/ai"
     if not (runtime / "manifest.json").is_file():
         raise SystemExit("학습 모델 resources/ai를 먼저 준비하세요.")
+    category = runtime / "category"
+    category_manifest = json.loads((category / "manifest.json").read_text(encoding="utf-8"))
+    for name, expected in category_manifest["files"].items():
+        if hashlib.sha256((category / name).read_bytes()).hexdigest() != expected:
+            raise SystemExit(f"카테고리 실행 자산 해시 불일치: {name}")
     if "+cpu" not in importlib.metadata.version("torch"):
         raise SystemExit("CPU 전용 PyTorch 빌드 환경을 사용하세요.")
     additions = [(runtime, "resources/ai"), (ROOT / "resources/standard_sheet.json", "resources"),
@@ -60,7 +69,7 @@ def main():
     command = [sys.executable, "-m", "PyInstaller", "--noconfirm", "--onedir", "--windowed", "--name", "CoatDesk2",
                "--workpath", str(ROOT / "build/v2-ai"), "--specpath", str(stage), "--distpath", str(release),
                "--exclude-module", "PySide6.QtWebEngineCore", "--exclude-module", "PySide6.QtPdf",
-               "--exclude-module", "cv2", "--exclude-module", "matplotlib", "--exclude-module", "scipy",
+               "--exclude-module", "matplotlib", "--exclude-module", "scipy",
                "--exclude-module", "pandas", "--exclude-module", "IPython", "--exclude-module", "pytest",
                "--exclude-module", "tensorboard", "--exclude-module", "tkinter", "--collect-all", "torchvision"]
     for module in ("google", "googleapiclient", "google_auth_httplib2", "google_auth_oauthlib", "httplib2",
@@ -91,8 +100,9 @@ def main():
     if compiler:
         subprocess.run([str(compiler.resolve()), "/INPUTCHARSET", "UTF8", f"/DPAYLOAD={payload}", f"/DOUTPUT={installer}",
                         f"/DUNINSTALL_MANIFEST={manifest}", str(ROOT / "installer/CoatDesk2.nsi")], cwd=ROOT, check=True)
-    report = {"version": __version__, "executable": str(payload / "CoatDesk2.exe"), "trained_models": 3,
-              "category_ai": False, "category_default": "자켓", "embedded_sheet_template": True, "excel_export": True,
+    report = {"version": __version__, "executable": str(payload / "CoatDesk2.exe"), "trained_models": 4,
+              "category_ai": True, "category_policy": POLICY_VERSION, "category_thresholds": DEFAULT_CATEGORY_THRESHOLDS,
+              "category_assets": category_manifest, "embedded_sheet_template": True, "excel_export": True,
               "installer": str(installer) if installer.exists() else None,
               "google_configured": False, "files": len(files),
               "bytes": sum(p.stat().st_size for p in files),

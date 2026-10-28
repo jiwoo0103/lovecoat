@@ -8,7 +8,7 @@ RowLayout {
     property var controller
     visible: !!record.needsReview && !record.excluded
     Item { Layout.fillWidth: true }
-    Button {
+    ActionButton {
         objectName: "confirm_" + actions.record.code
         text: "확인"
         focusPolicy: Qt.NoFocus
