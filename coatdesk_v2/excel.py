@@ -370,7 +370,9 @@ def _replace(source, target):
         os.replace(source, target)
 
 
-def save(repository: Repository, plan: ExportPlan) -> str:
+def save(repository: Repository, plan: ExportPlan, progress=None) -> str:
+    report = progress or (lambda message: None)
+    report("저장할 내용을 확인합니다…")
     workspace = repository.load(plan.workspace_id)
     if workspace.export_fingerprint() != plan.workspace_digest or _rows(workspace) != plan.rows:
         raise ValueError("작업 내용이 변경되었습니다. 미리보기를 다시 만드세요.")
@@ -393,6 +395,7 @@ def save(repository: Repository, plan: ExportPlan) -> str:
                     raise ValueError("같은 이름의 시트가 생겼습니다. 미리보기를 다시 만드세요.")
             else:
                 next_title(plan.title, [])
+            report("엑셀 시트를 만듭니다…")
             parts = _new_workbook(plan, data)
             if original:
                 parts = _append(original, parts, plan.title)
@@ -406,14 +409,25 @@ def save(repository: Repository, plan: ExportPlan) -> str:
                         archive.writestr(name, raw)
                 stream.flush()
                 os.fsync(stream.fileno())
+            report("저장한 내용을 검증합니다…")
             book = load_workbook(temporary, read_only=True, data_only=False, keep_links=True)
             try:
                 sheet = book[plan.title]
-                for r, values in enumerate(plan.rows, 3):
-                    if [sheet.cell(r, c).value or "" for c in range(2, 15)] != values:
-                        raise ValueError("저장 결과 확인에 실패했습니다. 원본 파일은 변경하지 않았습니다.")
+                rows = sheet.iter_rows(min_row=3, max_row=len(plan.rows)+2,
+                                       min_col=2, max_col=14, values_only=True)
+                try:
+                    for values, actual in zip(plan.rows, rows, strict=True):
+                        if [value or "" for value in actual] != values:
+                            raise ValueError("저장 결과 확인에 실패했습니다. 원본 파일은 변경하지 않았습니다.")
+                finally:
+                    # Stop the streaming XML reader before closing/deleting the
+                    # workbook, including validation failures on Windows.
+                    close = getattr(rows, "close", None)
+                    if close:
+                        close()
             finally:
                 book.close()
+            report("검증을 마쳤습니다. 파일을 저장합니다…")
             if _digest(target) != plan.file_digest:
                 raise ValueError("저장 중 엑셀 파일이 변경되었습니다. 미리보기를 다시 만드세요.")
             if plan.file_digest is None:

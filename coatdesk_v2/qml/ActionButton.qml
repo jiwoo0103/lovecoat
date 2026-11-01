@@ -3,6 +3,7 @@ import QtQuick.Controls
 
 Button {
     id: control
+    property bool danger: false
     font.pixelSize: 13
     leftPadding: 12
     rightPadding: 12
@@ -18,7 +19,7 @@ Button {
     }
     background: Rectangle {
         radius: 7
-        color: !control.enabled ? "#e9edf4" : (control.highlighted || control.checked ? (control.down ? "#1d4ed8" : "#2563eb") : (control.down ? "#e3ecfc" : (control.hovered ? "#f0f5ff" : "#ffffff")))
+        color: !control.enabled ? "#e9edf4" : (control.highlighted || control.checked ? (control.danger ? "#c43b3b" : (control.down ? "#1d4ed8" : "#2563eb")) : (control.down ? "#e3ecfc" : (control.hovered ? "#f0f5ff" : "#ffffff")))
         border.color: control.highlighted || control.checked ? "transparent" : "#d8e1ee"
     }
 }

@@ -16,7 +16,7 @@ ApplicationWindow {
     font.pixelSize: 13
     property var appState: appBackend.state
     property int popupCount: 0
-    property bool pageNavigationEnabled: working && !appState.exporting && !appState.loadingWorkspace && popupCount === 0 && !classificationPopup.opened && !layoutPopup.opened && !workspaceMenu.opened && !addTabMenu.opened && !createDialog.opened && !recentDialog.opened && !sourceDialog.opened && !aiDialog.opened && !batchDialog.opened && !viewDialog.opened && !headDialog.opened && !zoomDialog.opened && !transferDialog.opened
+    property bool pageNavigationEnabled: working && !appState.loadingWorkspace && popupCount === 0 && !classificationPopup.opened && !layoutPopup.opened && !workspaceMenu.opened && !addTabMenu.opened && !createDialog.opened && !recentDialog.opened && !sourceDialog.opened && !aiDialog.opened && !batchDialog.opened && !viewDialog.opened && !headDialog.opened && !zoomDialog.opened && !transferDialog.opened
     Component.onCompleted: appBackend.attachWindow(window)
     property bool working: appState.hasWorkspace && !appState.home
     palette.window: "#ffffff"
@@ -37,6 +37,13 @@ ApplicationWindow {
 
     function showZoom(code) { appBackend.focusGarment(code); zoomDialog.open() }
     function showHead(code) { appBackend.focusGarment(code); headDialog.open() }
+    property var managedWorkspace: ({id: "", name: ""})
+    function manageWorkspace(record, action) {
+        managedWorkspace = record
+        if (action === "rename") { renameField.text = record.name; renameDialog.open() }
+        else if (action === "delete") deleteDialog.open()
+        else backupFile.open()
+    }
     function emptyPhotoSummary() {
         var codes = appState.emptyPhotoCodes
         return "사진 없는 폴더 " + codes.length + "개" + (codes.length ? " · " + codes.slice(0, 12).join(", ") + "번" : "") + (codes.length > 12 ? " 외 " + (codes.length-12) + "개" : "")
@@ -75,6 +82,7 @@ ApplicationWindow {
                 model: appState.openWorkspaces
                 ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AsNeeded }
                 delegate: ActionButton {
+                    id: tabButton
                     required property var modelData
                     objectName: "workspaceTab_" + modelData.id
                     height: workspaceTabs.height
@@ -84,7 +92,20 @@ ApplicationWindow {
                     focusPolicy: Qt.NoFocus
                     checked: !appState.home && appState.workspaceId === modelData.id
                     enabled: !appState.navigationBlocked
-                    contentItem: Label { text: parent.text; color: parent.checked ? "#2563eb" : "#475569"; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight }
+                    contentItem: RowLayout {
+                        spacing: 8
+                        Label { Layout.fillWidth: true; text: tabButton.text; color: tabButton.checked ? "#2563eb" : "#475569"; elide: Text.ElideRight }
+                        ToolButton {
+                            objectName: "closeWorkspace_" + tabButton.modelData.id
+                            text: "×"
+                            font.pixelSize: 18
+                            implicitWidth: 24
+                            implicitHeight: 28
+                            ToolTip.visible: hovered
+                            ToolTip.text: "탭 닫기 · 작업 기록은 유지합니다"
+                            onClicked: { var key = tabButton.modelData.id; window.contentItem.forceActiveFocus(); appBackend.closeWorkspace(key) }
+                        }
+                    }
                     background: Rectangle { radius: 6; color: parent.checked ? "#ffffff" : (parent.hovered ? "#e5edfc" : "#e2e8ec"); border.color: parent.checked ? "#8db2ff" : "transparent" }
                     onClicked: { var key = modelData.id; window.contentItem.forceActiveFocus(); appBackend.requestWorkspace(key) }
                 }
@@ -101,6 +122,7 @@ ApplicationWindow {
                     y: -implicitHeight
                     MenuItem { objectName: "newWorkspaceTabAction"; text: "새 작업 만들기"; onTriggered: createDialog.open() }
                     MenuItem { objectName: "openWorkspaceTabAction"; text: "기존 작업 열기"; onTriggered: recentDialog.open() }
+                    MenuItem { text: "백업에서 복원"; enabled: !appState.busy; onTriggered: restoreFile.open() }
                 }
             }
         }
@@ -131,6 +153,8 @@ ApplicationWindow {
             controller: appBackend
             appState: window.appState
             onCreateRequested: createDialog.open()
+            onManageRequested: function(record, action) { window.manageWorkspace(record, action) }
+            onRestoreRequested: restoreFile.open()
         }
         RowLayout {
             visible: window.working
@@ -139,7 +163,7 @@ ApplicationWindow {
             Label { text: appState.name; font.pixelSize: 21; font.bold: true; color: "#183449"; Layout.maximumWidth: window.width * 0.4; elide: Text.ElideRight }
             Label { text: appState.date + " · " + appState.counts.total + "벌"; color: "#73818c" }
             Item { Layout.fillWidth: true }
-            Label { text: appState.saved ? "자동 저장" : "저장 확인 필요"; color: appState.saved ? "#74958d" : "#a03227"; font.pixelSize: 11 }
+            Label { text: appState.workspaceLocked ? "엑셀 저장 중 · 입력 잠금" : (appState.saved ? "자동 저장" : "저장 확인 필요"); color: appState.saved ? "#74958d" : "#a03227"; font.pixelSize: 11 }
             ToolButton {
                 objectName: "workspaceMenuButton"
                 implicitWidth: 40
@@ -160,28 +184,44 @@ ApplicationWindow {
                     y: parent.height
                     MenuItem { objectName: "excelExportAction"; text: "엑셀로 저장"; onTriggered: { window.contentItem.forceActiveFocus(); transferDialog.open() } }
                     MenuSeparator {}
-                    MenuItem { text: "보기 설정"; onTriggered: viewDialog.open() }
-                    MenuItem { text: "사진 범위 / 에러번호 / 폴더"; onTriggered: sourceDialog.open() }
-                    MenuItem { text: "분석 기준"; onTriggered: aiDialog.open() }
-                    MenuItem { text: "다시 분석"; onTriggered: appBackend.startAnalysis(true) }
+                    MenuItem { objectName: "viewSettingsAction"; text: "보기 설정"; onTriggered: viewDialog.open() }
                     MenuSeparator {}
                     MenuItem { text: "현재 페이지 선택"; onTriggered: appBackend.selectPage() }
-                    MenuItem { text: "선택한 " + appState.selectedCount + "벌 일괄 입력"; enabled: appState.selectedCount > 0; onTriggered: batchDialog.open() }
-                    MenuItem { text: "선택한 옷 입력 지우기"; enabled: appState.selectedCount > 0; onTriggered: appBackend.clearSelected() }
-                    MenuItem { text: "실행 취소  Ctrl+Z"; enabled: appState.canUndo; onTriggered: appBackend.undo() }
+                    MenuItem { text: "선택 해제"; enabled: appState.selectedCount > 0; onTriggered: appBackend.clearSelection() }
+                    MenuItem { text: "선택한 " + appState.selectedCount + "벌 일괄 입력"; enabled: appState.selectedCount > 0 && !appState.workspaceLocked; onTriggered: batchDialog.open() }
+                    MenuItem { text: "선택한 옷 입력 지우기"; enabled: appState.selectedCount > 0 && !appState.workspaceLocked; onTriggered: clearInputDialog.open() }
+                    MenuItem { text: "실행 취소  Ctrl+Z"; enabled: appState.canUndo && !appState.workspaceLocked; onTriggered: appBackend.undo() }
+                    MenuSeparator {}
+                    Menu {
+                        title: "고급 설정"
+                        MenuItem { text: "사진 범위 / 에러번호 / 폴더"; onTriggered: sourceDialog.open() }
+                        MenuItem { text: "분석 기준"; onTriggered: aiDialog.open() }
+                        MenuItem { text: "작업 전체 다시 분석"; enabled: !appState.busy; onTriggered: appBackend.startAnalysis(true) }
+                    }
+                    Menu {
+                        title: "작업 관리"
+                        enabled: !appState.busy
+                        MenuItem { text: "이름 변경"; onTriggered: window.manageWorkspace({id: appState.workspaceId, name: appState.name}, "rename") }
+                        MenuItem { text: "작업 기록 백업"; onTriggered: window.manageWorkspace({id: appState.workspaceId, name: appState.name}, "backup") }
+                        MenuSeparator {}
+                        MenuItem { text: "작업 삭제…"; onTriggered: window.manageWorkspace({id: appState.workspaceId, name: appState.name}, "delete") }
+                    }
                 }
             }
         }
         RowLayout {
+            objectName: "workspaceToolbar"
             visible: window.working
             Layout.fillWidth: true
-            spacing: 8
+            spacing: 12
             ActionButton {
                 objectName: "analyzeButton"
                 text: appState.recognizing ? "분석 중단" : "분석"
                 implicitHeight: 35
                 highlighted: true
                 enabled: appState.recognizing || !appState.busy
+                ToolTip.visible: hovered && appState.recognizing
+                ToolTip.text: appState.analysisWorkspaceName + " 작업의 분석을 중단합니다."
                 onClicked: { board.forceActiveFocus(); appState.recognizing ? appBackend.cancelAnalysis() : appBackend.startAnalysis(false) }
             }
             ActionButton {
@@ -190,15 +230,18 @@ ApplicationWindow {
                 implicitHeight: 35
                 checkable: true
                 checked: appState.filter === "확인 필요"
-                enabled: !appState.exporting
+                enabled: !appState.loadingWorkspace
                 onClicked: { board.forceActiveFocus(); appBackend.setFilter(checked ? "확인 필요" : "전체") }
             }
-            Label { visible: appState.selectedCount > 0; text: appState.selectedCount + "벌 선택"; color: "#73818c"; font.pixelSize: 11 }
+            ActionButton { objectName: "clearSelectionButton"; visible: appState.selectedCount > 0; text: appState.selectedCount + "벌 선택 · 해제"; implicitHeight: 35; onClicked: appBackend.clearSelection() }
             Item { Layout.fillWidth: true }
-            RowLayout {
-                spacing: 0
-                ActionButton { objectName: "reviewModeButton"; text: "사진+입력"; implicitHeight: 35; checkable: true; checked: appState.mode === "review"; highlighted: checked; focusPolicy: Qt.NoFocus; onClicked: appBackend.setMode("review") }
-                ActionButton { objectName: "photoOnlySwitch"; text: "사진만 보기"; implicitHeight: 35; checkable: true; checked: appState.mode === "photos"; highlighted: checked; focusPolicy: Qt.NoFocus; onClicked: appBackend.setMode(checked ? "photos" : "review") }
+            Switch {
+                objectName: "inputVisibilitySwitch"
+                text: "입력창"
+                implicitHeight: 35
+                checked: appState.mode === "review"
+                focusPolicy: Qt.NoFocus
+                onClicked: { board.forceActiveFocus(); appBackend.setMode(checked ? "review" : "photos") }
             }
             ActionButton {
                 objectName: "layoutButton"
@@ -247,15 +290,14 @@ ApplicationWindow {
                     }
                 }
             }
-            ActionButton { objectName: "fastInputButton"; text: "빠른 입력"; implicitHeight: 35; checkable: true; checked: appState.fastInput; highlighted: checked; focusPolicy: Qt.NoFocus; onClicked: appBackend.setFastInput(!appState.fastInput) }
-            TextField {
+            AppField {
                 id: searchField
                 objectName: "garmentSearch"
                 placeholderText: "옷 번호 검색"
                 text: appState.search
                 implicitHeight: 35
                 Layout.preferredWidth: window.width < 1100 ? 112 : 155
-                enabled: !appState.exporting
+                enabled: !appState.loadingWorkspace
                 onTextEdited: appBackend.setSearch(text)
             }
             ActionButton {
@@ -264,7 +306,7 @@ ApplicationWindow {
                 property int activeCount: Object.keys(appState.classFilters).filter(function(k) { return !!appState.classFilters[k] }).length
                 text: "분류" + (activeCount ? " · " + activeCount : "") + "  ▼"
                 implicitHeight: 35
-                enabled: !appState.exporting
+                enabled: !appState.loadingWorkspace
                 onClicked: classificationPopup.open()
                 Popup {
                     id: classificationPopup
@@ -333,7 +375,8 @@ ApplicationWindow {
                             frontOnly: appState.frontOnly
                             photoSize: appState.photoSize
                             options: appState.options
-                            enabled: !appState.exporting && !appState.loadingWorkspace && !appState.scopeChanging
+                            enabled: !appState.loadingWorkspace && !appState.scopeChanging
+                            editingEnabled: !appState.workspaceLocked
                             onZoomRequested: function(code) { window.showZoom(code) }
                             onHeadRequested: function(code) { window.showHead(code) }
                         }
@@ -343,30 +386,88 @@ ApplicationWindow {
             Label { anchors.centerIn: parent; visible: appState.visibleCount === 0; text: "이 조건에 해당하는 옷이 없습니다."; color: "#64748b" }
         }
         RowLayout {
-            visible: window.working
+            visible: window.working || appState.exporting || appState.recognizing
             Layout.fillWidth: true
             spacing: 8
-            ToolButton { text: "←"; implicitHeight: 29; enabled: appState.page > 1; onClicked: appBackend.pageBy(-1) }
-            Label { text: appState.page + " / " + appState.pages + " 페이지"; color: "#73818c"; font.pixelSize: 11 }
-            ToolButton { text: "→"; implicitHeight: 29; enabled: appState.page < appState.pages; onClicked: appBackend.pageBy(1) }
+            ToolButton { visible: window.working; text: "←"; implicitHeight: 29; enabled: appState.page > 1; onClicked: appBackend.pageBy(-1) }
+            Label { visible: window.working; text: appState.page + " / " + appState.pages + " 페이지"; color: "#73818c"; font.pixelSize: 11 }
+            ToolButton { visible: window.working; text: "→"; implicitHeight: 29; enabled: appState.page < appState.pages; onClicked: appBackend.pageBy(1) }
             BusyIndicator { running: appState.busy; visible: running; implicitWidth: 22; implicitHeight: 22 }
             Label { Layout.fillWidth: true; text: appState.message; elide: Text.ElideRight; color: "#73818c"; font.pixelSize: 11 }
         }
     }
-    Shortcut { sequence: "Ctrl+Z"; enabled: window.working && !zoomDialog.opened && !appState.busy; onActivated: appBackend.undo() }
+    Shortcut { sequence: "Ctrl+Z"; enabled: window.working && !zoomDialog.opened && !appState.navigationBlocked && !appState.loadingWorkspace && !appState.workspaceLocked; onActivated: appBackend.undo() }
     Shortcut { sequence: "Ctrl+F"; enabled: window.working; onActivated: searchField.forceActiveFocus() }
-    Dialog {
+    SurfaceDialog {
+        id: renameDialog
+        objectName: "renameDialog"
+        title: "작업 이름 변경"
+        modal: true
+        anchors.centerIn: parent
+        width: 440
+        standardButtons: Dialog.Ok | Dialog.Cancel
+        acceptLabel: "이름 변경"
+        acceptEnabled: renameField.text.trim().length > 0
+        onAccepted: appBackend.renameWorkspace(window.managedWorkspace.id, renameField.text)
+        AppField { id: renameField; objectName: "renameWorkspaceField"; width: parent.width; maximumLength: 120; onAccepted: if (renameDialog.acceptEnabled) renameDialog.accept() }
+    }
+    SurfaceDialog {
+        id: deleteDialog
+        objectName: "deleteDialog"
+        title: "작업을 삭제할까요?"
+        modal: true
+        anchors.centerIn: parent
+        width: 460
+        standardButtons: Dialog.Ok | Dialog.Cancel
+        acceptLabel: "작업 삭제"
+        destructive: true
+        onAccepted: appBackend.deleteWorkspace(window.managedWorkspace.id)
+        Label { width: parent.width; text: "‘" + window.managedWorkspace.name + "’의 입력·검수·분석 기록을 삭제합니다. 되돌릴 수 없습니다.\n\n원본 사진과 이미 저장한 엑셀 파일은 유지합니다."; wrapMode: Text.Wrap; color: "#475569" }
+    }
+    SurfaceDialog {
+        id: clearInputDialog
+        title: "선택한 옷의 입력을 지울까요?"
+        modal: true
+        anchors.centerIn: parent
+        width: 440
+        standardButtons: Dialog.Ok | Dialog.Cancel
+        acceptLabel: "입력 지우기"
+        destructive: true
+        onAccepted: appBackend.clearSelected()
+        Label { width: parent.width; text: "선택한 " + appState.selectedCount + "벌의 입력·확인 상태를 지웁니다. 원본 사진은 유지하며 Ctrl+Z로 되돌릴 수 있습니다."; wrapMode: Text.Wrap }
+    }
+    FileDialog {
+        id: backupFile
+        title: "작업 기록 백업 · 사진은 포함하지 않습니다"
+        fileMode: FileDialog.SaveFile
+        defaultSuffix: "json"
+        nameFilters: ["작업 백업 (*.json)"]
+        onAccepted: appBackend.backupWorkspace(window.managedWorkspace.id, selectedFile.toString())
+    }
+    FileDialog {
+        id: restoreFile
+        title: "작업 기록 복원 · 기존 작업은 유지합니다"
+        fileMode: FileDialog.OpenFile
+        nameFilters: ["작업 백업 (*.json)"]
+        onAccepted: appBackend.restoreWorkspace(selectedFile.toString())
+    }
+    SurfaceDialog {
         id: createDialog
         objectName: "createDialog"
         title: "새 작업 만들기"
         modal: true
         anchors.centerIn: parent
         width: 580
-        standardButtons: Dialog.Cancel
-        WorkspaceForm { width: parent.width; controller: appBackend; busy: appState.busy; onSubmitted: createDialog.close() }
+        standardButtons: Dialog.Ok | Dialog.Cancel
+        acceptLabel: appState.busy ? "처리 중…" : "작업 시작"
+        acceptObjectName: "createWorkspaceButton"
+        acceptEnabled: workspaceForm.canSubmit
+        autoAccept: false
+        onPrimaryTriggered: workspaceForm.submit()
+        WorkspaceForm { id: workspaceForm; width: parent.width; controller: appBackend; busy: appState.busy; onSubmitted: createDialog.close() }
     }
 
-    Dialog {
+    SurfaceDialog {
         id: recentDialog
         objectName: "recentDialog"
         title: "최근 작업공간"
@@ -392,7 +493,7 @@ ApplicationWindow {
         }
     }
 
-    Dialog {
+    SurfaceDialog {
         id: sourceDialog
         objectName: "sourceDialog"
         title: "사진 범위 · 에러번호 · 사진 폴더"
@@ -404,34 +505,35 @@ ApplicationWindow {
         Connections { target: appBackend; function onScopeChanged() { sourceDialog.close() } }
         ColumnLayout {
             width: parent.width
+            spacing: 12
             RowLayout {
                 Layout.fillWidth: true
                 ColumnLayout {
                     Layout.fillWidth: true
                     Label { text: "시작 번호" }
-                    TextField { id: editRangeStart; objectName: "editRangeStart"; Layout.fillWidth: true; text: appState.start; enabled: !appState.busy; validator: IntValidator { bottom: 0; top: 99999999 } }
+                    AppField { id: editRangeStart; objectName: "editRangeStart"; Layout.fillWidth: true; text: appState.start; enabled: !appState.busy; validator: IntValidator { bottom: 0; top: 99999999 } }
                 }
                 Label { text: "—"; Layout.topMargin: 20 }
                 ColumnLayout {
                     Layout.fillWidth: true
                     Label { text: "끝 번호" }
-                    TextField { id: editRangeEnd; objectName: "editRangeEnd"; Layout.fillWidth: true; text: appState.end; enabled: !appState.busy; validator: IntValidator { bottom: 0; top: 99999999 } }
+                    AppField { id: editRangeEnd; objectName: "editRangeEnd"; Layout.fillWidth: true; text: appState.end; enabled: !appState.busy; validator: IntValidator { bottom: 0; top: 99999999 } }
                 }
             }
             Label { text: "에러번호 · 이 범위에서 제외할 번호" }
-            TextField { id: editErrors; objectName: "editErrorNumbers"; Layout.fillWidth: true; placeholderText: "212, 300"; enabled: !appState.busy }
+            AppField { id: editErrors; objectName: "editErrorNumbers"; Layout.fillWidth: true; placeholderText: "212, 300"; enabled: !appState.busy }
             Label { Layout.fillWidth: true; text: "범위를 줄여도 기존 입력은 보관됩니다. 다시 늘리면 이어서 표시합니다. 범위 밖 에러번호는 함께 수정하세요."; color: "#64748b"; wrapMode: Text.Wrap }
             Label { Layout.fillWidth: true; text: window.emptyPhotoSummary(); color: "#64748b"; wrapMode: Text.Wrap }
             Label { text: "다른 작업공간과 이미 저장한 엑셀 파일은 바뀌지 않습니다."; color: "#64748b" }
             Label { visible: appState.error.length > 0; Layout.fillWidth: true; text: appState.error; color: "#a03227"; wrapMode: Text.Wrap }
             ActionButton { objectName: "saveWorkspaceScope"; text: appState.scopeChanging ? "사진 검사 중…" : "사진 범위와 에러번호 저장"; enabled: !appState.busy; highlighted: true; onClicked: appBackend.updateWorkspaceScope(editRangeStart.text, editRangeEnd.text, editErrors.text) }
             Label { Layout.fillWidth: true; text: "사진 위치: " + appState.source; wrapMode: Text.Wrap; topPadding: 18 }
-            ActionButton { text: "옮긴 사진 폴더 다시 연결"; enabled: !appState.navigationBlocked; onClicked: reconnectFolder.open() }
+            ActionButton { text: "옮긴 사진 폴더 다시 연결"; enabled: !appState.busy; onClicked: reconnectFolder.open() }
         }
     }
     FolderDialog { id: reconnectFolder; title: "같은 번호 구조의 사진 상위 폴더"; onAccepted: { appBackend.reconnect(selectedFolder.toString()); sourceDialog.close() } }
 
-    Dialog {
+    SurfaceDialog {
         id: aiDialog
         objectName: "aiDialog"
         title: "모델별 확인 필요 기준"
@@ -441,17 +543,18 @@ ApplicationWindow {
         standardButtons: Dialog.Close
         ColumnLayout {
             width: parent.width
+            spacing: 12
             Label { Layout.fillWidth: true; text: "후보값을 먼저 입력하고, 기준 미달 항목만 확인이 필요하도록 표시합니다. 점수는 실제 정답 확률이 아닙니다."; wrapMode: Text.Wrap }
             RowLayout { Label { text: "판넬 위치 (%)" } SpinBox { id: panelThreshold; from: 1; to: 100; value: Math.round(appState.aiThresholds.panel * 100) } }
             RowLayout { Label { text: "성별 / 성인·아동 (%)" } SpinBox { id: shapeThreshold; from: 1; to: 100; value: Math.round(appState.aiThresholds.shape * 100) } }
             RowLayout { Label { text: "사이즈 (%)" } SpinBox { id: sizeThreshold; from: 1; to: 100; value: Math.round(appState.aiThresholds.size * 100) } }
             RowLayout { Label { text: "옷 소매 (%)" } SpinBox { id: sleeveThreshold; objectName: "sleeveThreshold"; from: 1; to: 100; value: Math.round(appState.categoryThresholds.sleeve * 100) } }
             Label { text: "옷 기장 기준: 90%"; color: "#64748b" }
-            ActionButton { objectName: "saveAiThresholds"; text: "기준 저장"; onClicked: { appBackend.setAiThresholds(panelThreshold.value, shapeThreshold.value, sizeThreshold.value, sleeveThreshold.value); aiDialog.close() } }
+            ActionButton { objectName: "saveAiThresholds"; text: "기준 저장"; enabled: !appState.busy; onClicked: { appBackend.setAiThresholds(panelThreshold.value, shapeThreshold.value, sizeThreshold.value, sleeveThreshold.value); aiDialog.close() } }
         }
     }
 
-    Dialog {
+    SurfaceDialog {
         id: batchDialog
         objectName: "batchDialog"
         title: "선택한 " + appState.selectedCount + "벌에 일괄 입력"
@@ -461,6 +564,7 @@ ApplicationWindow {
         standardButtons: Dialog.Close
         ColumnLayout {
             width: parent.width
+            spacing: 12
             Label { text: "고른 항목만 적용합니다. 빈 항목은 기존 값을 유지합니다."; color: "#64748b" }
             Choice { id: batchCategory; Layout.fillWidth: true; label: "카테고리"; choices: appState.options.category; onCommitted: function(v) { value = v } }
             Choice { id: batchGender; Layout.fillWidth: true; label: "성별"; choices: appState.options.gender; onCommitted: function(v) { value = v } }
@@ -470,7 +574,7 @@ ApplicationWindow {
         }
     }
 
-    Dialog {
+    SurfaceDialog {
         id: viewDialog
         objectName: "viewDialog"
         title: "보기 설정"
@@ -480,16 +584,17 @@ ApplicationWindow {
         standardButtons: Dialog.Close
         ColumnLayout {
             width: parent.width
+            spacing: 12
             Label { text: "현재 배치 " + appState.gridRows + "행 × " + appState.gridColumns + "열" }
-            ActionButton { text: "행·열 배치 선택"; onClicked: { viewDialog.close(); layoutPopup.open() } }
-            CheckBox { text: "사진만 보기에서 정면만 표시"; checked: appState.frontOnly; onClicked: appBackend.setFrontOnly(checked) }
+            CheckBox { objectName: "fastInputCheckBox"; text: "빠른 입력"; checked: appState.fastInput; onClicked: appBackend.setFastInput(checked) }
+            CheckBox { text: "입력창을 끈 상태에서 정면만 표시"; checked: appState.frontOnly; onClicked: appBackend.setFrontOnly(checked) }
             Label { text: "사진 확대 " + appState.photoSize + "%" }
             Slider { Layout.fillWidth: true; from: 100; to: 250; stepSize: 10; value: appState.photoSize; onMoved: appBackend.setPhotoSize(value) }
             Label { Layout.fillWidth: true; text: "한 칸은 옷 한 벌입니다. Ctrl/Shift로 여러 벌을 선택하고 더블클릭으로 확대합니다. 좌우 방향키로 페이지를 이동합니다."; wrapMode: Text.Wrap; color: "#64748b" }
         }
     }
 
-    Dialog {
+    SurfaceDialog {
         id: headDialog
         objectName: "headDialog"
         title: "머리 확대 · " + (appState.current.code || "")
@@ -506,14 +611,14 @@ ApplicationWindow {
                 ActionButton { text: "← 이전 옷"; onClicked: appBackend.nextGarment(-1) }
                 ActionButton { text: "다음 옷 →"; onClicked: appBackend.nextGarment(1) }
                 Item { Layout.fillWidth: true }
-                ActionButton { text: "머리 영역 지정"; onClicked: { headDialog.close(); zoomDialog.cropMode = true; zoomDialog.open() } }
-                ActionButton { text: "자동 위치 사용"; onClicked: appBackend.automaticPanel() }
-                ActionButton { text: "다시 분석"; enabled: !appState.navigationBlocked; onClicked: appBackend.startAnalysis(false) }
+                ActionButton { text: "머리 영역 지정"; enabled: !appState.recognizing && !appState.workspaceLocked; onClicked: { headDialog.close(); zoomDialog.cropMode = true; zoomDialog.open() } }
+                ActionButton { text: "자동 위치 사용"; enabled: !appState.recognizing && !appState.workspaceLocked; onClicked: appBackend.automaticPanel() }
+                ActionButton { objectName: "analyzeCurrentButton"; text: "이 옷만 다시 분석"; enabled: !appState.busy && !!appState.current.code && !appState.current.excluded; onClicked: appBackend.analyzeCurrent() }
             }
         }
     }
 
-    Dialog {
+    SurfaceDialog {
         id: zoomDialog
         objectName: "zoomDialog"
         title: "사진 상세 · " + (appState.current.code || "")
@@ -548,9 +653,9 @@ ApplicationWindow {
                 ActionButton { text: "다음 옷 →"; onClicked: appBackend.nextGarment(1) }
                 ComboBox { id: angleBox; model: zoomDialog.anglePhotos; textRole: "angle"; implicitWidth: 80; delegate: SelectOption { width: angleBox.width; text: modelData.angle; currentValue: index === angleBox.currentIndex; highlighted: index === angleBox.highlightedIndex } }
                 ToolButton { text: "머리 확대"; onClicked: { zoomDialog.close(); headDialog.open() } }
-                ActionButton { text: "정면으로"; enabled: !appState.recognizing; onClicked: appBackend.setFront(appState.current.code, angleBox.currentText) }
-                CheckBox { text: "머리 영역 지정"; checked: zoomDialog.cropMode; enabled: !appState.recognizing; onClicked: { zoomDialog.cropMode = checked; zoomDialog.factor = 1; zoomDialog.panX = 0; zoomDialog.panY = 0 } }
-                ActionButton { text: "선택한 옷에 적용"; enabled: appState.selectedCount > 0 && !appState.recognizing; onClicked: appBackend.applyRoiToSelected() }
+                ActionButton { text: "정면으로"; enabled: !appState.recognizing && !appState.workspaceLocked; onClicked: appBackend.setFront(appState.current.code, angleBox.currentText) }
+                CheckBox { text: "머리 영역 지정"; checked: zoomDialog.cropMode; enabled: !appState.recognizing && !appState.workspaceLocked; onClicked: { zoomDialog.cropMode = checked; zoomDialog.factor = 1; zoomDialog.panX = 0; zoomDialog.panY = 0 } }
+                ActionButton { text: "선택한 옷에 적용"; enabled: appState.selectedCount > 0 && !appState.recognizing && !appState.workspaceLocked; onClicked: appBackend.applyRoiToSelected() }
                 Item { Layout.fillWidth: true }
                 ActionButton { text: "전체 맞춤"; onClicked: { zoomDialog.factor = 1; zoomDialog.panX = 0; zoomDialog.panY = 0 } }
             }
@@ -630,7 +735,7 @@ ApplicationWindow {
         }
     }
 
-    Dialog {
+    SurfaceDialog {
         id: transferDialog
         objectName: "transferDialog"
         title: "엑셀 파일에 새 시트로 저장"
@@ -641,7 +746,11 @@ ApplicationWindow {
         anchors.centerIn: parent
         width: Math.min(900, window.width-40)
         height: Math.min(720, window.height-70)
-        standardButtons: Dialog.Close
+        standardButtons: Dialog.Ok | Dialog.Close
+        acceptLabel: "새 시트에 저장"
+        acceptObjectName: "excelSaveButton"
+        acceptEnabled: appState.planReady && !appState.busy
+        onAccepted: { window.contentItem.forceActiveFocus(); appBackend.saveExcel() }
         onOpened: { excelPath.text = appState.excelPath; newTab.text = appState.date.replace(/-/g, ""); appBackend.invalidatePlan() }
         ColumnLayout {
             anchors.fill: parent
@@ -652,7 +761,7 @@ ApplicationWindow {
                 ActionButton { text: "새 엑셀 파일"; enabled: !appState.navigationBlocked; onClicked: newExcelFile.open() }
                 ActionButton { text: "기존 엑셀 파일 선택"; enabled: !appState.navigationBlocked; onClicked: existingExcelFile.open() }
             }
-            TextField {
+            AppField {
                 id: excelPath
                 objectName: "excelPathField"
                 enabled: !appState.navigationBlocked
@@ -665,13 +774,12 @@ ApplicationWindow {
                 Label { text: "내장 표준 양식"; color: "#73818c" }
                 Item { Layout.fillWidth: true }
                 Label { text: "새 시트 이름" }
-                TextField { id: newTab; objectName: "newExcelSheetName"; enabled: !appState.navigationBlocked; Layout.preferredWidth: 160; onTextChanged: appBackend.invalidatePlan() }
-                ActionButton { text: "미리보기"; objectName: "excelPreviewButton"; enabled: !appState.navigationBlocked && excelPath.text.trim().length > 0 && newTab.text.trim().length > 0; onClicked: appBackend.previewExcel(excelPath.text, newTab.text) }
+                AppField { id: newTab; objectName: "newExcelSheetName"; enabled: !appState.navigationBlocked; Layout.preferredWidth: 160; onTextChanged: appBackend.invalidatePlan() }
+                ActionButton { text: "미리보기"; objectName: "excelPreviewButton"; enabled: !appState.busy && excelPath.text.trim().length > 0 && newTab.text.trim().length > 0; onClicked: appBackend.previewExcel(excelPath.text, newTab.text) }
             }
             Label { objectName: "exportCounts"; Layout.fillWidth: true; text: "대상 " + appState.counts.total + "벌  ·  저장 가능 " + appState.counts.confirmed + "벌  ·  에러번호로 제외 " + appState.counts.excluded + "벌"; font.bold: true; wrapMode: Text.Wrap }
             Label { objectName: "emptyPhotosSummary"; Layout.fillWidth: true; text: window.emptyPhotoSummary(); wrapMode: Text.Wrap; color: appState.emptyPhotoCodes.length ? "#a66812" : "#64748b" }
             Label { Layout.fillWidth: true; text: appState.planReady ? (appState.planAddsToFile ? "기존 파일에 시트 추가: " : "새 파일에 시트 생성: ") + appState.planTitle + "  /  아래 내용을 확인한 뒤 저장하세요." : "모든 대상의 네 항목 입력과 필요한 확인을 마치면 미리보기를 만들 수 있습니다."; color: "#2563eb"; wrapMode: Text.Wrap }
-            Label { visible: appState.planReady; Layout.fillWidth: true; text: appState.planPath; color: "#64748b"; elide: Text.ElideMiddle }
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -680,12 +788,13 @@ ApplicationWindow {
                 border.color: "#dce3eb"
                 radius: 6
                 ListView {
+                    objectName: "exportPreviewList"
                     anchors.fill: parent
                     anchors.margins: 8
                     clip: true
                     model: appState.planRows
-                    header: Label { text: "번호     외투코드          카테고리        성별        연령        사이즈"; height: 32; font.bold: true; color: "#203a42" }
-                    delegate: Label { width: ListView.view.width; text: modelData.join("          "); height: 30; font.family: "Malgun Gothic"; color: "#203a42" }
+                    header: ExportRow { width: ListView.view.width; heading: true; values: ["번호", "외투코드", "카테고리", "성별", "연령", "사이즈"] }
+                    delegate: ExportRow { objectName: "exportRow_" + modelData[1]; width: ListView.view.width; values: modelData }
                     ScrollBar.vertical: ScrollBar {}
                 }
             }
@@ -695,7 +804,6 @@ ApplicationWindow {
                 ActionButton { visible: appState.lastFileUrl.length > 0; text: "저장한 파일 열기"; onClicked: Qt.openUrlExternally(appState.lastFileUrl) }
                 Item { Layout.fillWidth: true }
                 BusyIndicator { implicitWidth: 30; implicitHeight: 30; running: appState.busy; visible: running }
-                ActionButton { objectName: "excelSaveButton"; text: "확인한 내용으로 새 시트에 저장"; highlighted: true; enabled: appState.planReady && !appState.busy; onClicked: appBackend.saveExcel() }
             }
         }
     }

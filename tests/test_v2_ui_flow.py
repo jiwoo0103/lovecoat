@@ -1,5 +1,6 @@
 """Exercise the approved workspace UI with synthetic photos and no online calls."""
 import os
+import threading
 from pathlib import Path
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
@@ -199,13 +200,139 @@ def test_three_classification_rows_combine_with_search_and_review(ui):
     assert not backend.filtered
     click(window, window.findChild(QObject, "reviewFilterButton"))
     assert [g.code for g in backend.filtered] == ["0003"]
-    click(window, window.findChild(QObject, "photoOnlySwitch"))
+    click(window, window.findChild(QObject, "inputVisibilitySwitch"))
     assert backend.mode == "photos"
-    click(window, window.findChild(QObject, "photoOnlySwitch"))
+    click(window, window.findChild(QObject, "inputVisibilitySwitch"))
     assert backend.mode == "review"
     click(window, window.findChild(QObject, "classificationButton"))
     click(window, window.findChild(QObject, "resetClassFilters"))
     assert backend.state["classFilters"] == {"gender": "", "size": "", "age": ""}
+
+
+def test_input_visibility_switch_spacing_and_fast_input_setting(ui):
+    backend, window, keys, _ = ui
+    backend.openWorkspace(keys[0])
+    backend.setField("0001", "category", "코트")
+    backend.selectPage()
+    toggle = window.findChild(QObject, "inputVisibilitySwitch")
+    toolbar_names = ("analyzeButton", "reviewFilterButton", "inputVisibilitySwitch",
+                     "layoutButton", "garmentSearch", "classificationButton")
+    for width, height in ((1000, 720), (1380, 920)):
+        window.resize(width, height)
+        QTest.qWait(100)
+        assert toggle.property("checked")
+        controls = [window.findChild(QObject, name) for name in toolbar_names]
+        for left, right in zip(controls, controls[1:]):
+            left_edge = left.mapToScene(QPointF(left.width(), 0)).x()
+            right_edge = right.mapToScene(QPointF(0, 0)).x()
+            assert right_edge - left_edge >= 11.5
+        assert controls[0].mapToScene(QPointF(0, 0)).x() >= 16
+        assert controls[-1].mapToScene(QPointF(controls[-1].width(), 0)).x() <= width - 16
+        capture(window, f"input-on-{width}.png")
+        click(window, toggle)
+        assert not toggle.property("checked") and backend.mode == "photos"
+        assert not visual(window.contentItem(), "category_0001_combo").property("visible")
+        capture(window, f"input-off-{width}.png")
+        click(window, toggle)
+        assert toggle.property("checked") and backend.mode == "review"
+        assert visual(window.contentItem(), "category_0001_combo").property("visible")
+        assert backend.repository.load(keys[0]).garments[0].fields["category"] == "코트"
+
+    click(window, window.findChild(QObject, "workspaceMenuButton"))
+    click(window, window.findChild(QObject, "viewSettingsAction"))
+    setting = window.findChild(QObject, "fastInputCheckBox")
+    assert not setting.property("checked")
+    click(window, setting)
+    assert backend.fast_input and setting.property("checked")
+    capture(window, "view-settings-fast-input.png")
+    QMetaObject.invokeMethod(window.findChild(QObject, "viewDialog"), "close")
+    QTest.qWait(70)
+    assert visual(window.contentItem(), "fast_category_0001_2").property("visible")
+    click(window, toggle)
+    backend.openWorkspace(keys[1])
+    backend.openWorkspace(keys[0])
+    QTest.qWait(70)
+    assert backend.mode == "photos" and not toggle.property("checked")
+    click(window, toggle)
+    assert backend.fast_input and visual(window.contentItem(), "fast_category_0001_2").property("visible")
+    assert backend.repository.load(keys[0]).garments[0].fields["category"] == "코트"
+
+
+@pytest.mark.parametrize("cancel", [False, True])
+def test_analysis_keeps_menu_navigation_and_other_workspace_edits_available(ui, cancel):
+    backend, window, keys, _ = ui
+    entered = [threading.Event(), threading.Event()]
+    released = [threading.Event(), threading.Event()]
+    calls = []
+
+    class Engine:
+        def key(self, workspace, garment):
+            return "test-" + garment.code
+
+        def analyze(self, workspace, garment):
+            index = len(calls)
+            calls.append((workspace.id, garment.code))
+            if index < 2:
+                entered[index].set()
+                assert released[index].wait(15), "test did not release analysis"
+            return {"values": {"size": "M"}}
+
+    backend.engine_factory = Engine
+    backend.openWorkspace(keys[1])
+    backend.openWorkspace(keys[0])
+    click(window, window.findChild(QObject, "analyzeButton"))
+    try:
+        wait_for(entered[0].is_set)
+        assert backend.recognizing and not backend.state["navigationBlocked"]
+        click(window, window.findChild(QObject, "workspaceMenuButton"))
+        assert window.findChild(QObject, "workspaceMenu").property("opened")
+        click(window, window.findChild(QObject, "viewSettingsAction"))
+        assert window.findChild(QObject, "viewDialog").property("opened")
+        QMetaObject.invokeMethod(window.findChild(QObject, "viewDialog"), "close")
+        QTest.qWait(70)
+        click(window, visual(window.contentItem(), "workspaceTab_" + keys[1]))
+        wait_for(lambda: backend.workspace.id == keys[1] and not backend.state["loadingWorkspace"])
+        assert backend.state["analysisWorkspaceId"] == keys[0]
+        assert backend.state["analysisWorkspaceName"] == "첫 번째 작업"
+        select_option(window, visual(window.contentItem(), "size_0001_combo"), 5)
+        assert backend.repository.load(keys[1]).garments[0].fields["size"] == "L"
+        QTest.keyClick(window, Qt.Key_Z, Qt.ControlModifier)
+        QTest.qWait(70)
+        assert not backend.repository.load(keys[1]).garments[0].fields
+        select_option(window, visual(window.contentItem(), "size_0001_combo"), 5)
+        click(window, window.findChild(QObject, "homeButton"))
+        assert backend.state["home"] and backend.recognizing
+        click(window, visual(window.contentItem(), "workspaceTab_" + keys[1]))
+        wait_for(lambda: not backend.state["home"] and not backend.state["loadingWorkspace"])
+        backend.setLayout(1, 1)
+        QTest.qWait(60)
+        QTest.keyClick(window, Qt.Key_Right)
+        assert backend.page == 1
+        released[0].set()
+        wait_for(entered[1].is_set)
+        QTest.qWait(100)
+        assert all(not g.suggestion for g in backend.workspace.garments)
+        assert backend.workspace.garments[0].fields == {"size": "L"}
+        assert backend.page == 1
+        capture(window, "analysis-other-workspace.png")
+        if cancel:
+            click(window, window.findChild(QObject, "analyzeButton"))
+            assert backend.cancel_event.is_set()
+        released[1].set()
+        wait_for(lambda: not backend.jobs)
+        original = backend.repository.load(keys[0])
+        other = backend.repository.load(keys[1])
+        assert sum(g.analysis_state == "done" for g in original.garments) == (2 if cancel else 4)
+        assert {key for key, code in calls} == {keys[0]}
+        assert other.garments[0].fields == {"size": "L"}
+        assert all(not g.suggestion and g.analysis_state == "pending" for g in other.garments)
+        assert backend.workspace.id == keys[1] and backend.page == 1
+        assert not backend.recognizing and not backend.state["analysisWorkspaceId"]
+        assert "첫 번째 작업" in backend.message
+    finally:
+        for event in released:
+            event.set()
+        wait_for(lambda: not backend.jobs)
 
 
 def test_workspace_navigation_is_disabled_while_background_job_is_running(ui):

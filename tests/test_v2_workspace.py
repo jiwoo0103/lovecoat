@@ -192,6 +192,24 @@ def test_worker_results_are_queued_to_ui_and_analysis_resumes_without_overwrite(
     backend.shutdown()
 
 
+def test_queued_analysis_progress_preserves_newer_manual_input(tmp_path):
+    app = application()
+    repo, key = workspace(tmp_path, 1)
+    backend = Backend(repo.directory)
+    backend.openWorkspace(key)
+    repo.edit(key, ["0001"], lambda g: g.fields.update(size="M"))
+    snapshot = repo.load_garments(key, ["0001"])
+    backend.setField("0001", "size", "L")
+    backend._event(("queued-analysis", "progress", {
+        "message": "분석 진행", "workspace": key, "garments": snapshot,
+    }))
+    assert backend.workspace.garments[0].fields["size"] == "L"
+    assert backend.model.rows[0]["fields"]["size"] == "L"
+    assert repo.load(key).garments[0].fields["size"] == "L"
+    backend.shutdown()
+    assert app
+
+
 def test_cancel_stores_completed_garment_and_keeps_remaining_pending(tmp_path):
     app = application()
     repo, key = workspace(tmp_path, 6)

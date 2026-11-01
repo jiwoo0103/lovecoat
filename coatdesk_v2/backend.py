@@ -119,7 +119,11 @@ class Backend(QObject):
         self.error = ""
         self.saved = True
         self.recognizing = False
+        self.analysis_workspace_id = ""
+        self.analysis_workspace_name = ""
         self.exporting = False
+        self.export_workspace_id = ""
+        self.last_exports = {}
         self.cancel_event = threading.Event()
         self.jobs = {}
         self.pool = QThreadPool(self)
@@ -172,7 +176,9 @@ class Backend(QObject):
                 "filter": self.filter_name, "search": self.search,
                 "current": next((r for r in self.model.rows if r["code"] == self.current), self._record(current) if current and not any(r["code"] == self.current for r in self.model.rows) else {}),
                 "busy": bool(self.jobs), "recognizing": self.recognizing, "exporting": self.exporting,
-                "navigationBlocked": any(kind != "load" for _, kind in self.jobs.values()),
+                "workspaceLocked": self.workspace_locked,
+                "analysisWorkspaceId": self.analysis_workspace_id, "analysisWorkspaceName": self.analysis_workspace_name,
+                "navigationBlocked": self.navigation_blocked,
                 "loadingWorkspace": any(kind == "load" for _, kind in self.jobs.values()),
                 "scopeChanging": any(kind == "scope" for _, kind in self.jobs.values()),
                 "message": self.message, "error": self.error, "saved": self.saved, "canUndo": bool(self.undo_stack),
@@ -189,6 +195,14 @@ class Backend(QObject):
     def _notify(self):
         self._state_cache = None
         self.changed.emit()
+
+    @property
+    def navigation_blocked(self):
+        return any(kind not in {"load", "recognition", "preview", "export"} for _, kind in self.jobs.values())
+
+    @property
+    def workspace_locked(self):
+        return bool(self.exporting and self.workspace and self.workspace.id == self.export_workspace_id)
 
     @property
     def page_size(self):
@@ -284,11 +298,15 @@ class Backend(QObject):
         if action == "progress":
             if isinstance(value, dict):
                 self.message = value["message"]
-                if self.workspace and self.workspace.id == value["workspace"]:
-                    changes = {g.code: g for g in value["garments"]}
+                if "garments" in value and self.workspace and self.workspace.id == value["workspace"]:
+                    codes = [g.code for g in value["garments"]]
+                    # A queued progress snapshot may predate the user's latest edit.
+                    changes = {g.code: g for g in self.repository.load_garments(self.workspace.id, codes)}
                     self.workspace.garments = [changes.get(g.code, g) for g in self.workspace.garments]
                     self._workspace_summary = None
-                self._refresh(False)
+                    self._refresh(False)
+                else:
+                    self._notify()
             else:
                 self.message = str(value)
                 self._notify()
@@ -296,8 +314,10 @@ class Backend(QObject):
         done, kind = self.jobs.pop(job_id)
         if kind == "recognition":
             self.recognizing = False
+            self.analysis_workspace_id = self.analysis_workspace_name = ""
         if kind == "export":
             self.exporting = False
+            self.export_workspace_id = ""
         if action == "error":
             self._fail(value)
         else:
@@ -330,7 +350,7 @@ class Backend(QObject):
 
     @Slot(str)
     def openWorkspace(self, workspace_id, loaded=None):
-        if any(kind != "load" for _, kind in self.jobs.values()):
+        if self.navigation_blocked:
             self._fail("진행 중인 작업을 마친 뒤 다른 작업공간을 여세요.")
             return
         try:
@@ -360,7 +380,8 @@ class Backend(QObject):
             self.current = view.get("current", "")
             self.anchor = ""
             self.selected = set(view.get("selected", []))
-            self.undo_stack, self.plan, self.last_path = self.workspace_undo.get(workspace_id, []), None, ""
+            self.undo_stack, self.plan = self.workspace_undo.get(workspace_id, []), None
+            self.last_path = self.last_exports.get(workspace_id, "")
             self.page = 0
             self.repository.set_setting("last_workspace", workspace_id)
             self.message, self.error = "작업공간을 열었습니다. 입력 내용은 자동 저장됩니다.", ""
@@ -370,7 +391,7 @@ class Backend(QObject):
 
     @Slot(str)
     def requestWorkspace(self, workspace_id):
-        if any(kind != "load" for _, kind in self.jobs.values()):
+        if self.navigation_blocked:
             self._fail("진행 중인 작업을 마친 뒤 다른 작업공간을 여세요.")
             return
         if self.workspace:
@@ -382,9 +403,85 @@ class Backend(QObject):
                 self.openWorkspace(workspace_id, workspace)
         self._run("작업공간을 여는 중…", lambda progress: self.repository.load(workspace_id), done, "load")
 
+    @Slot(str)
+    def closeWorkspace(self, workspace_id):
+        if self.navigation_blocked:
+            return
+        self._open_request += 1
+        try:
+            if self.workspace and self.workspace.id == workspace_id:
+                self._view()
+                self.show_home = True
+            self.opened = [key for key in self.opened if key != workspace_id]
+            self.repository.set_setting("open_workspaces", self.opened)
+            self._notify()
+        except Exception as error:
+            self._fail(error)
+
+    @Slot(str, str)
+    def renameWorkspace(self, workspace_id, name):
+        if self.jobs:
+            self._fail("진행 중인 작업을 마친 뒤 이름을 바꾸세요.")
+            return
+        try:
+            self.repository.rename(workspace_id, name)
+            if self.workspace and self.workspace.id == workspace_id:
+                self.workspace.name = name.strip()
+            self.recent = self.repository.recent()
+            self.error = ""
+            self._notify()
+        except Exception as error:
+            self._fail(error)
+
+    @Slot(str)
+    def deleteWorkspace(self, workspace_id):
+        if self.jobs:
+            self._fail("진행 중인 작업을 마친 뒤 작업을 삭제하세요.")
+            return
+        try:
+            self._open_request += 1
+            self.repository.delete(workspace_id)
+            self.opened = [key for key in self.opened if key != workspace_id]
+            self.workspace_undo.pop(workspace_id, None)
+            self.last_exports.pop(workspace_id, None)
+            if self.workspace and self.workspace.id == workspace_id:
+                self.workspace = None
+                self._workspace_summary = None
+                self.show_home, self.plan = True, None
+                self.selected.clear()
+                self.filtered, self.undo_stack = [], []
+                self.current, self.last_path = "", ""
+                self.model.replace([])
+            self.recent = self.repository.recent()
+            self.message, self.error = "작업 기록을 삭제했습니다. 원본 사진과 엑셀 파일은 유지합니다.", ""
+            self._notify()
+        except Exception as error:
+            self._fail(error)
+
+    @Slot(str, str)
+    def backupWorkspace(self, workspace_id, path):
+        if self.jobs:
+            return
+        try:
+            self._run("작업 기록을 백업합니다…",
+                      lambda progress: self.repository.backup_workspace(workspace_id, local_path(path)),
+                      lambda _: self._backup_done())
+        except Exception as error:
+            self._fail(error)
+
+    def _backup_done(self):
+        self.message = "작업 기록 백업 완료. 원본 사진은 백업에 포함되지 않습니다."
+
+    @Slot(str)
+    def restoreWorkspace(self, path):
+        if self.jobs:
+            return
+        self._run("작업 기록을 복원합니다…",
+                  lambda progress: self.repository.restore_workspace(local_path(path)), self.openWorkspace)
+
     @Slot()
     def goHome(self):
-        if any(kind != "load" for _, kind in self.jobs.values()):
+        if self.navigation_blocked:
             return
         self._open_request += 1
         try:
@@ -431,6 +528,12 @@ class Backend(QObject):
     @Slot()
     def selectPage(self):
         self.selected.update(r["code"] for r in self.model.rows)
+        self._preference()
+
+    @Slot()
+    def clearSelection(self):
+        self.selected.clear()
+        self.anchor = ""
         self._preference()
 
     @Slot(str)
@@ -514,8 +617,10 @@ class Backend(QObject):
         self._preference()
 
     def _edit(self, codes, change):
-        if not self.workspace or self.exporting:
+        if not self.workspace:
             return
+        if self.workspace_locked:
+            raise ValueError("엑셀에 저장 중인 작업입니다. 저장 후 입력을 바꾸세요.")
         if not codes:
             raise ValueError("먼저 옷을 선택하세요.")
         if any(kind == "scope" for _, kind in self.jobs.values()):
@@ -602,7 +707,7 @@ class Backend(QObject):
 
     @Slot()
     def undo(self):
-        if not self.undo_stack or self.exporting:
+        if not self.undo_stack or self.workspace_locked:
             return
         try:
             self.repository.undo(self.workspace.id, self.undo_stack[-1])
@@ -614,7 +719,7 @@ class Backend(QObject):
 
     @Slot(str)
     def setErrors(self, text):
-        if not self.workspace or self.exporting:
+        if not self.workspace or self.workspace_locked:
             return
         try:
             errors = parse_errors(text, self.workspace.start, self.workspace.end)
@@ -749,7 +854,7 @@ class Backend(QObject):
 
     @Slot()
     def automaticPanel(self):
-        if self.recognizing or not self.current:
+        if self.recognizing or self.workspace_locked or not self.current:
             return
         def change(g):
             g.roi_manual, g.analysis_key, g.confirmed = False, "", False
@@ -757,13 +862,23 @@ class Backend(QObject):
 
     @Slot(bool)
     def startAnalysis(self, force=False):
+        self._start_analysis(force)
+
+    @Slot()
+    def analyzeCurrent(self):
+        if self.current:
+            self._start_analysis(True, {self.current})
+
+    def _start_analysis(self, force, codes=None):
         if not self.workspace or self.jobs:
             return
         workspace = self.repository.load(self.workspace.id)
         priority = {r["code"]: i for i, r in enumerate(self.model.rows)}
-        garments = sorted(workspace.active, key=lambda g: (priority.get(g.code, 10**9), int(g.code)))
+        garments = sorted((g for g in workspace.active if codes is None or g.code in codes),
+                          key=lambda g: (priority.get(g.code, 10**9), int(g.code)))
         self.cancel_event.clear()
         self.recognizing = True
+        self.analysis_workspace_id, self.analysis_workspace_name = workspace.id, workspace.name
         def analyze(progress):
             if self._recognition_engine is None:
                 self._recognition_engine = self.engine_factory()
@@ -779,7 +894,7 @@ class Backend(QObject):
                 nonlocal last_progress
                 changes.extend(self.repository.load_garments(workspace.id, [garment.code]))
                 if time.monotonic() - last_progress >= .08:
-                    progress({"message": f"분석 · {completed} / {len(garments)}벌 · {garment.code}",
+                    progress({"message": f"{workspace.name} · 분석 · {completed} / {len(garments)}벌 · {garment.code}",
                               "workspace": workspace.id, "garments": changes.copy()})
                     changes.clear()
                     last_progress = time.monotonic()
@@ -807,16 +922,16 @@ class Backend(QObject):
                 completed += 1
                 report(g)
             if changes:
-                progress({"message": f"분석 · {completed} / {len(garments)}벌", "workspace": workspace.id, "garments": changes})
+                progress({"message": f"{workspace.name} · 분석 · {completed} / {len(garments)}벌", "workspace": workspace.id, "garments": changes})
             return completed
         def done(count):
-            self.message = f"분석 {'중단' if self.cancel_event.is_set() else '완료'} · {count}벌 처리 · 빈 항목에 입력했습니다. 확인 필요 항목을 검수하세요."
-        self._run("현재 화면의 옷부터 분석합니다…", analyze, done, "recognition")
+            self.message = f"{workspace.name} · 분석 {'중단' if self.cancel_event.is_set() else '완료'} · {count}벌 처리 · 빈 항목에 입력했습니다. 확인 필요 항목을 검수하세요."
+        self._run(f"{workspace.name} · 현재 화면의 옷부터 분석합니다…", analyze, done, "recognition")
 
     @Slot()
     def cancelAnalysis(self):
         self.cancel_event.set()
-        self.message = "현재 옷의 처리를 마친 뒤 중단합니다. 완료한 결과는 저장됩니다."
+        self.message = f"{self.analysis_workspace_name} · 현재 옷의 처리를 마친 뒤 중단합니다. 완료한 결과는 저장됩니다."
         self._notify()
 
     @Slot()
@@ -841,17 +956,19 @@ class Backend(QObject):
             target = local_path(path.strip())
             self.target_path = target
             def done(plan):
+                if not self.workspace or self.workspace.id != workspace.id or self.show_home:
+                    return
                 if self.target_path != target:
                     self.message = "저장 위치가 바뀌었습니다. 미리보기를 다시 만드세요."
                     return
-                if self.workspace.export_fingerprint() != plan.workspace_digest:
+                if self.repository.load(workspace.id).export_fingerprint() != plan.workspace_digest:
                     raise ValueError("미리보기를 만드는 동안 입력이 바뀌었습니다. 다시 만드세요.")
                 self.plan = plan
                 self.repository.set_setting("excel_path", plan.path)
                 self.excel_path = plan.path
                 self.message = f"새 시트 {plan.title} · {len(plan.rows)}벌 · 확인 후 저장하세요."
             self._run("양식과 저장할 값을 확인합니다…",
-                      lambda progress: excel.build_plan(workspace, target, title), done)
+                      lambda progress: excel.build_plan(workspace, target, title), done, "preview")
         except Exception as error:
             self._fail(error)
 
@@ -861,11 +978,17 @@ class Backend(QObject):
             return
         plan, self.plan = self.plan, None
         self.exporting = True
+        self.export_workspace_id = plan.workspace_id
+        name = self.workspace.name if self.workspace else "작업"
         def done(path):
-            self.last_path = str(path)
-            self.message = f"엑셀의 새 시트 {plan.title}에 저장하고 입력값을 다시 읽어 확인했습니다."
-        self._run("엑셀 파일에 새 시트를 저장합니다…",
-                  lambda progress: excel.save(self.repository, plan), done, "export")
+            self.last_exports[plan.workspace_id] = str(path)
+            if self.workspace and self.workspace.id == plan.workspace_id:
+                self.last_path = str(path)
+            self.message = f"{name} · {len(plan.rows)}벌을 엑셀의 새 시트 {plan.title}에 저장했습니다."
+        def save(progress):
+            return excel.save(self.repository, plan, lambda message: progress({
+                "message": f"{name} · {message}", "workspace": plan.workspace_id}))
+        self._run(f"{name} · 엑셀 파일에 새 시트를 저장합니다…", save, done, "export")
 
     def shutdown(self):
         self.cancel_event.set()

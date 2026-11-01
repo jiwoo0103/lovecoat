@@ -11,11 +11,13 @@ Item {
     property int photoSize: 150
     property var options: ({})
     property bool fastInput: false
+    property bool editingEnabled: true
     signal zoomRequested(string code)
     signal headRequested(string code)
     Rectangle {
     id: card
     property bool fastInput: viewport.fastInput
+    property bool editingEnabled: viewport.editingEnabled
     property real fitScale: Math.max(.01, Math.min(1, viewport.width/450, viewport.height/(fastInput && review ? 300 : 265)))
     width: viewport.width/fitScale
     height: viewport.height/fitScale
@@ -79,8 +81,9 @@ Item {
                 background: Rectangle { radius: 5; color: card.record.excluded ? "#edf0f5" : "#fff1d4" }
                 font.pixelSize: 12
             }
-            ToolButton {
-                text: card.record.selected ? "✓" : "+"
+            CheckBox {
+                objectName: "select_" + card.record.code
+                checked: !!card.record.selected
                 implicitHeight: 25
                 implicitWidth: 28
                 focusPolicy: Qt.NoFocus
@@ -130,7 +133,7 @@ Item {
                         requiresReview: card.pending("category")
                         hint: card.reason("category")
 
-                        enabled: !card.record.excluded
+                        enabled: card.editingEnabled && !card.record.excluded
                         onCommitted: function(value) { card.controller.setField(card.record.code, "category", value) }
                     }
                     Choice {
@@ -143,7 +146,7 @@ Item {
                         requiresReview: card.pending("size")
                         hint: card.reason("size")
 
-                        enabled: !card.record.excluded
+                        enabled: card.editingEnabled && !card.record.excluded
                         onCommitted: function(value) { card.controller.setField(card.record.code, "size", value) }
                     }
                     Choice {
@@ -156,7 +159,7 @@ Item {
                         requiresReview: card.pending("gender")
                         hint: card.reason("gender")
                         choiceLabels: card.record.fields.age === "유아동" ? ["남아", "여아"] : []
-                        enabled: !card.record.excluded
+                        enabled: card.editingEnabled && !card.record.excluded
                         onCommitted: function(value) { card.controller.setField(card.record.code, "gender", value) }
                     }
                     Choice {
@@ -169,7 +172,7 @@ Item {
                         requiresReview: card.pending("age")
                         hint: card.reason("age")
 
-                        enabled: !card.record.excluded
+                        enabled: card.editingEnabled && !card.record.excluded
                         onCommitted: function(value) { card.controller.setField(card.record.code, "age", value) }
                     }
                     }
@@ -191,7 +194,7 @@ Item {
                         requiresReview: card.pending("category")
                         hint: card.reason("category")
 
-                        enabled: !card.record.excluded
+                        enabled: card.editingEnabled && !card.record.excluded
                         onCommitted: function(value) { card.controller.setField(card.record.code, "category", value) }
                     }
                     FastChoice {
@@ -205,7 +208,7 @@ Item {
                         hint: card.reason("size")
                         columns: 4
 
-                        enabled: !card.record.excluded
+                        enabled: card.editingEnabled && !card.record.excluded
                         onCommitted: function(value) { card.controller.setField(card.record.code, "size", value) }
                     }
                     FastChoice {
@@ -218,7 +221,7 @@ Item {
                         requiresReview: card.pending("gender")
                         hint: card.reason("gender")
                         choiceLabels: card.record.fields.age === "유아동" ? ["남아", "여아"] : []
-                        enabled: !card.record.excluded
+                        enabled: card.editingEnabled && !card.record.excluded
                         onCommitted: function(value) { card.controller.setField(card.record.code, "gender", value) }
                     }
                     FastChoice {
@@ -231,12 +234,12 @@ Item {
                         requiresReview: card.pending("age")
                         hint: card.reason("age")
 
-                        enabled: !card.record.excluded
+                        enabled: card.editingEnabled && !card.record.excluded
                         onCommitted: function(value) { card.controller.setField(card.record.code, "age", value) }
                     }
                     }
                 }
-                ReviewActions { Layout.fillWidth: true; record: card.record; controller: card.controller }
+                ReviewActions { enabled: card.editingEnabled; Layout.fillWidth: true; record: card.record; controller: card.controller }
                 Item { Layout.fillHeight: true }
 
             }

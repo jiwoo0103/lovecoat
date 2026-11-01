@@ -4,11 +4,13 @@ import json
 import copy
 import sqlite3
 import uuid
+import os
+import tempfile
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .domain import EDITABLE, Garment, Workspace, parse_errors, shooting_date
+from .domain import EDITABLE, FIELDS, Garment, Workspace, parse_errors, photo_path, shooting_date, validate_roi
 from .category import DEFAULT_CATEGORY_THRESHOLDS
 
 SCHEMA_VERSION = 1
@@ -104,6 +106,89 @@ class Repository:
             db.executemany("INSERT INTO garments VALUES(?,?,?,?)", [
                 (workspace_id, g.code, int(g.code), encode(g.to_dict())) for g in garments])
             db.execute("INSERT OR REPLACE INTO settings VALUES('last_workspace',?)", (encode(workspace_id),))
+        return workspace_id
+
+    def rename(self, workspace_id, name):
+        name = name.strip()
+        if not name or len(name) > 120:
+            raise ValueError("작업 이름을 1~120자로 입력하세요.")
+        with self.connection() as db:
+            if not db.execute("UPDATE workspaces SET name=?,updated=? WHERE id=?",
+                              (name, now(), workspace_id)).rowcount:
+                raise ValueError("작업을 찾을 수 없습니다.")
+
+    def delete(self, workspace_id):
+        with self.connection() as db:
+            if not db.execute("SELECT 1 FROM workspaces WHERE id=?", (workspace_id,)).fetchone():
+                raise ValueError("작업을 찾을 수 없습니다.")
+            db.execute("DELETE FROM exports WHERE workspace_id=?", (workspace_id,))
+            db.execute("DELETE FROM garments WHERE workspace_id=?", (workspace_id,))
+            db.execute("DELETE FROM workspaces WHERE id=?", (workspace_id,))
+            for key in ("last_workspace", "open_workspaces"):
+                row = db.execute("SELECT value FROM settings WHERE key=?", (key,)).fetchone()
+                if row:
+                    value = json.loads(row[0])
+                    value = [v for v in value if v != workspace_id] if key == "open_workspaces" else ("" if value == workspace_id else value)
+                    db.execute("UPDATE settings SET value=? WHERE key=?", (encode(value), key))
+
+    def backup_workspace(self, workspace_id, target):
+        workspace = self.load(workspace_id)
+        data = {"format": "coatdesk-workspace", "version": 1,
+                "name": workspace.name, "date": workspace.shooting_date, "source": workspace.source,
+                "start": workspace.start, "end": workspace.end, "errors": workspace.errors,
+                "garments": [g.to_dict() for g in workspace.garments]}
+        target = Path(target)
+        descriptor, temporary = tempfile.mkstemp(prefix=".coatdesk-backup-", dir=target.parent)
+        try:
+            with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+                stream.write(encode(data))
+                stream.flush()
+                os.fsync(stream.fileno())
+            if os.name == "nt":
+                os.rename(temporary, target)
+            else:
+                os.link(temporary, target)
+        except FileExistsError as error:
+            raise ValueError("같은 이름의 백업이 있습니다. 다른 이름으로 저장하세요.") from error
+        finally:
+            Path(temporary).unlink(missing_ok=True)
+
+    def restore_workspace(self, path):
+        try:
+            data = json.loads(Path(path).read_text(encoding="utf-8"))
+            if data["format"] != "coatdesk-workspace" or data["version"] != 1:
+                raise ValueError
+            name, source = data["name"], data["source"]
+            start, end = data["start"], data["end"]
+            if (not isinstance(name, str) or not name.strip() or len(name) > 120 or
+                    not isinstance(source, str) or not source or type(start) is not int or type(end) is not int or
+                    start < 0 or end < start or end-start > 100_000):
+                raise ValueError
+            day = shooting_date("", data["date"])
+            errors = parse_errors(",".join(str(n) for n in data["errors"]), start, end)
+            garments = [Garment(**row) for row in data["garments"]]
+            codes = set()
+            for garment in garments:
+                if (not isinstance(garment.code, str) or not garment.code.isascii() or
+                        not garment.code.isdigit() or int(garment.code) in codes):
+                    raise ValueError
+                codes.add(int(garment.code))
+                validate_roi(garment.roi)
+                if any(k not in FIELDS or not isinstance(v, str) or len(v) > 100 for k, v in garment.fields.items()):
+                    raise ValueError
+                for angle, relative in garment.photos.items():
+                    if (not isinstance(angle, str) or not angle.isascii() or not angle.isdigit() or
+                            not isinstance(relative, str)):
+                        raise ValueError
+                    photo_path(source, relative)
+        except (KeyError, TypeError, ValueError, AttributeError) as error:
+            raise ValueError("외투 작업실에서 만든 정상 작업 백업 파일을 선택하세요.") from error
+        workspace_id = uuid.uuid4().hex
+        with self.connection() as db:
+            db.execute("INSERT INTO workspaces(id,name,shooting_date,source,start,end,errors,updated) VALUES(?,?,?,?,?,?,?,?)",
+                       (workspace_id, name.strip(), day, source, start, end, encode(errors), now()))
+            db.executemany("INSERT INTO garments VALUES(?,?,?,?)", [
+                (workspace_id, g.code, int(g.code), encode(g.to_dict())) for g in garments])
         return workspace_id
 
     def recent(self) -> list[dict]:

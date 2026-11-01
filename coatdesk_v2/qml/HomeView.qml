@@ -7,6 +7,8 @@ ColumnLayout {
     property var controller
     property var appState
     signal createRequested()
+    signal manageRequested(var record, string action)
+    signal restoreRequested()
     spacing: 22
     ColumnLayout {
         spacing: 6
@@ -17,6 +19,7 @@ ColumnLayout {
         Layout.fillWidth: true
         Label { text: "내 작업공간"; font.pixelSize: 16; font.bold: true }
         Item { Layout.fillWidth: true }
+        ActionButton { text: "백업에서 복원"; enabled: !home.appState.busy; onClicked: home.restoreRequested() }
         Label { text: "최근 작업 순"; color: "#73818c"; font.pixelSize: 11 }
     }
     GridView {
@@ -44,11 +47,36 @@ ColumnLayout {
             }
             contentItem: ColumnLayout {
                 spacing: 12
+                RowLayout {
+                    Layout.fillWidth: true
+                Item { visible: !modelData.id; Layout.fillWidth: true }
                 Label {
                     text: modelData.id ? "작업" : "+"
                     font.pixelSize: modelData.id ? 12 : 42
                     color: "#2563eb"
                     Layout.alignment: modelData.id ? Qt.AlignLeft : Qt.AlignHCenter
+                }
+                Item { Layout.fillWidth: true }
+                ToolButton {
+                    visible: !!modelData.id
+                    objectName: "workspaceManage_" + modelData.id
+                    implicitWidth: 34
+                    implicitHeight: 28
+                    contentItem: Item {
+                        Repeater { model: 3; Rectangle { required property int index; width: 3; height: 3; radius: 1.5; color: "#475569"; x: (parent.width-15)/2 + index*6; y: (parent.height-3)/2 } }
+                    }
+                    enabled: !home.appState.busy
+                    ToolTip.visible: hovered
+                    ToolTip.text: "작업 관리"
+                    onClicked: manageMenu.open()
+                    Menu {
+                        id: manageMenu
+                        MenuItem { objectName: "renameWorkspace_" + modelData.id; text: "이름 변경"; onTriggered: home.manageRequested(modelData, "rename") }
+                        MenuItem { text: "작업 기록 백업"; onTriggered: home.manageRequested(modelData, "backup") }
+                        MenuSeparator {}
+                        MenuItem { objectName: "deleteWorkspace_" + modelData.id; text: "작업 삭제…"; onTriggered: home.manageRequested(modelData, "delete") }
+                    }
+                }
                 }
                 Label {
                     text: modelData.name
