@@ -1,0 +1,207 @@
+{
+  "schema_version": 1,
+  "palette_id": "lovecoat-notion-muted-v6",
+  "recorded_on": "2026-11-03",
+  "status": "color_direction_accepted_reference_values",
+  "value_source": "Recorded design-intent hex values; not pixel sampling of generated images.",
+  "runtime_connected": true,
+  "runtime_source": "coatdesk_v2/qml/Theme.qml (matching role values; JSON is not loaded at runtime)",
+  "implemented_on": "2026-11-04",
+  "themes": {
+    "light": {
+      "canvas": "#F7F7F5",
+      "surface": "#FFFFFF",
+      "text.primary": "#30302E",
+      "text.secondary": "#62625D",
+      "border.subtle": "#DEDEDA",
+      "control.background": "#ECECE8",
+      "control.foreground": "#30302E",
+      "analysis.background": "#4267A5",
+      "analysis.foreground": "#FFFFFF",
+      "review.background": "#F5E7B4",
+      "review.foreground": "#584716",
+      "export.background": "#24674F",
+      "export.foreground": "#FFFFFF",
+      "pending.background": "#FFF9EA",
+      "pending.foreground": "#9D4540",
+      "pending.border": "#E8D9B6"
+    },
+    "dark": {
+      "canvas": "#191919",
+      "surface": "#222222",
+      "text.primary": "#F0EFED",
+      "text.secondary": "#B8B8B2",
+      "border.subtle": "#41413E",
+      "control.background": "#30302E",
+      "control.foreground": "#F0EFED",
+      "analysis.background": "#3D5F96",
+      "analysis.foreground": "#FFFFFF",
+      "review.background": "#66572F",
+      "review.foreground": "#F4E7BB",
+      "export.background": "#285D4A",
+      "export.foreground": "#FFFFFF",
+      "pending.background": "#302C22",
+      "pending.foreground": "#E2A09D",
+      "pending.border": "#655737"
+    }
+  },
+  "interaction_tokens_source": "coatdesk_v2/qml/Theme.qml and common QML controls",
+  "unresolved_states": [],
+  "contrast_text_target": 4.5,
+  "contrast_checks": [
+    {
+      "theme": "light",
+      "foreground": "text.primary",
+      "background": "canvas",
+      "ratio": 12.33,
+      "passes_text_target": true
+    },
+    {
+      "theme": "light",
+      "foreground": "text.primary",
+      "background": "surface",
+      "ratio": 13.22,
+      "passes_text_target": true
+    },
+    {
+      "theme": "light",
+      "foreground": "text.secondary",
+      "background": "canvas",
+      "ratio": 5.72,
+      "passes_text_target": true
+    },
+    {
+      "theme": "light",
+      "foreground": "text.secondary",
+      "background": "surface",
+      "ratio": 6.13,
+      "passes_text_target": true
+    },
+    {
+      "theme": "light",
+      "foreground": "control.foreground",
+      "background": "control.background",
+      "ratio": 11.17,
+      "passes_text_target": true
+    },
+    {
+      "theme": "light",
+      "foreground": "analysis.foreground",
+      "background": "analysis.background",
+      "ratio": 5.65,
+      "passes_text_target": true
+    },
+    {
+      "theme": "light",
+      "foreground": "review.foreground",
+      "background": "review.background",
+      "ratio": 7.29,
+      "passes_text_target": true
+    },
+    {
+      "theme": "light",
+      "foreground": "export.foreground",
+      "background": "export.background",
+      "ratio": 6.71,
+      "passes_text_target": true
+    },
+    {
+      "theme": "light",
+      "foreground": "pending.foreground",
+      "background": "pending.background",
+      "ratio": 5.95,
+      "passes_text_target": true
+    },
+    {
+      "theme": "light",
+      "foreground": "text.primary",
+      "background": "pending.background",
+      "ratio": 12.59,
+      "passes_text_target": true
+    },
+    {
+      "theme": "light",
+      "foreground": "text.secondary",
+      "background": "pending.background",
+      "ratio": 5.84,
+      "passes_text_target": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "text.primary",
+      "background": "canvas",
+      "ratio": 15.3,
+      "passes_text_target": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "text.primary",
+      "background": "surface",
+      "ratio": 13.85,
+      "passes_text_target": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "text.secondary",
+      "background": "canvas",
+      "ratio": 8.82,
+      "passes_text_target": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "text.secondary",
+      "background": "surface",
+      "ratio": 7.98,
+      "passes_text_target": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "control.foreground",
+      "background": "control.background",
+      "ratio": 11.51,
+      "passes_text_target": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "analysis.foreground",
+      "background": "analysis.background",
+      "ratio": 6.41,
+      "passes_text_target": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "review.foreground",
+      "background": "review.background",
+      "ratio": 5.72,
+      "passes_text_target": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "export.foreground",
+      "background": "export.background",
+      "ratio": 7.62,
+      "passes_text_target": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "pending.foreground",
+      "background": "pending.background",
+      "ratio": 6.46,
+      "passes_text_target": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "text.primary",
+      "background": "pending.background",
+      "ratio": 12.11,
+      "passes_text_target": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "text.secondary",
+      "background": "pending.background",
+      "ratio": 6.98,
+      "passes_text_target": true
+    }
+  ]
+}

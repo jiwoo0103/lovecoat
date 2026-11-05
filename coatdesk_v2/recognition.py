@@ -10,7 +10,7 @@ from .domain import Garment, Workspace, fingerprint, photo_path
 from .category import DEFAULT_CATEGORY_THRESHOLDS, decode
 
 DEFAULT_THRESHOLDS = {"panel": .90, "shape": .90, "size": .90}
-ENGINE_VERSION = "four-model-cpu-v2.4.1-configurable-category"
+ENGINE_VERSION = "four-model-cpu-v2.5-category-prefill"
 
 
 class RecognitionEngine:

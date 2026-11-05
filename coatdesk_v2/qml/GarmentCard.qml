@@ -30,11 +30,10 @@ Item {
     property bool frontOnly: viewport.frontOnly
     property int photoSize: viewport.photoSize
     property var options: viewport.options
-    function selectCard(modifiers) {
+    function focusCard() {
         var code = record.code
-        var backend = controller
         card.forceActiveFocus()
-        backend.select(code, modifiers)
+        controller.focusGarment(code)
     }
     function turnPage(delta) {
         var backend = controller
@@ -60,37 +59,21 @@ Item {
     onZoomRequested: function(code) { viewport.zoomRequested(code) }
     onHeadRequested: function(code) { viewport.headRequested(code) }
     radius: 10
-    color: record.excluded ? "#e5e7eb" : "#ffffff"
-    border.color: record.selected ? "#2563eb" : "#dce3eb"
-    border.width: record.selected ? 3 : 1
-    Behavior on color { ColorAnimation { duration: 100 } }
+    color: record.needsReview ? Theme.pending : (record.excluded ? Theme.control : Theme.surface)
+    border.color: record.needsReview ? Theme.pendingBorder : Theme.border
+    border.width: 1
+    Behavior on color { enabled: !Theme.transitioning; ColorAnimation { duration: 100 } }
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 10
+        anchors.margins: 16
         spacing: 6
         RowLayout {
             Layout.fillWidth: true
-            Label { text: "# " + (card.record.code || ""); font.bold: true; font.pixelSize: 15; color: "#172b42" }
+            Label { text: "# " + (card.record.code || ""); font.bold: true; font.pixelSize: 15; color: Theme.text }
             Item { Layout.fillWidth: true }
-            Label {
-                visible: !!card.record.needsReview || !!card.record.excluded
-                text: card.record.excluded ? "제외" : "확인 필요"
-                color: card.record.excluded ? "#64748b" : "#a66812"
-                padding: 5
-                background: Rectangle { radius: 5; color: card.record.excluded ? "#edf0f5" : "#fff1d4" }
-                font.pixelSize: 12
-            }
-            CheckBox {
-                objectName: "select_" + card.record.code
-                checked: !!card.record.selected
-                implicitHeight: 25
-                implicitWidth: 28
-                focusPolicy: Qt.NoFocus
-                onClicked: card.selectCard(Qt.ControlModifier)
-                ToolTip.visible: hovered
-                ToolTip.text: "선택 추가 / 해제"
-            }
+
+
         }
         RowLayout {
             visible: card.review
@@ -103,14 +86,14 @@ Item {
                 Layout.preferredWidth: card.width * 0.43
                 renderScale: card.fitScale
                 photo: card.record.photo || ""
-                onSelected: function(modifiers) { card.selectCard(modifiers) }
+                onActivated: card.focusCard()
                 onEnlarged: card.zoomRequested(card.record.code)
                 onPaged: function(delta) { card.turnPage(delta) }
             }
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                spacing: 5
+                spacing: 12
                 Loader {
                     Layout.fillWidth: true
                     Layout.preferredHeight: item ? item.implicitHeight : 0
@@ -119,7 +102,7 @@ Item {
                 Component {
                     id: normalFields
                     GridLayout {
-                        columns: 2
+                        columns: 1
                         uniformCellWidths: true
                         columnSpacing: 10
                         rowSpacing: 8
@@ -165,7 +148,7 @@ Item {
                     Choice {
                         Layout.fillWidth: true
                         Layout.alignment: Qt.AlignTop
-                        label: "성인 / 아동"
+                        label: "연령"
                         choices: card.options.age || []
                         value: card.record.fields.age || ""
                         objectName: "age_" + card.record.code
@@ -227,7 +210,7 @@ Item {
                     FastChoice {
                         Layout.fillWidth: true
                         Layout.alignment: Qt.AlignTop
-                        label: "성인 / 아동"
+                        label: "연령"
                         choices: card.options.age || []
                         value: card.record.fields.age || ""
                         objectName: "fast_age_" + card.record.code
@@ -257,7 +240,7 @@ Item {
                     renderScale: card.fitScale
                     photo: modelData.url || ""
                     zoom: card.photoSize
-                    onSelected: function(modifiers) { card.selectCard(modifiers) }
+                    onActivated: card.focusCard()
                     onEnlarged: card.zoomRequested(card.record.code)
                     onPaged: function(delta) { card.turnPage(delta) }
                     Label {
@@ -265,7 +248,7 @@ Item {
                         anchors.bottom: parent.bottom
                         anchors.margins: 5
                         text: "각도 " + modelData.angle
-                        color: "#475569"
+                        color: Theme.secondary
                         font.pixelSize: 11
                     }
                 }

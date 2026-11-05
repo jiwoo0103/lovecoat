@@ -8,19 +8,12 @@ ColumnLayout {
     property var appState
     signal createRequested()
     signal manageRequested(var record, string action)
-    signal restoreRequested()
-    spacing: 22
-    ColumnLayout {
-        spacing: 6
-        Label { text: "오늘의 작업을 시작하세요"; font.pixelSize: 26; font.bold: true; color: "#203541" }
-        Label { text: "새 작업을 만들거나, 저장된 작업을 이어서 진행하세요."; color: "#73818c" }
-    }
+    spacing: 24
     RowLayout {
         Layout.fillWidth: true
-        Label { text: "내 작업공간"; font.pixelSize: 16; font.bold: true }
+        Label { text: "내 작업공간"; font.pixelSize: 24; font.weight: Font.DemiBold }
         Item { Layout.fillWidth: true }
-        ActionButton { text: "백업에서 복원"; enabled: !home.appState.busy; onClicked: home.restoreRequested() }
-        Label { text: "최근 작업 순"; color: "#73818c"; font.pixelSize: 11 }
+        Label { text: "최근 작업 순"; color: Theme.secondary; font.pixelSize: 12 }
     }
     GridView {
         id: workspaces
@@ -28,74 +21,72 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.fillHeight: true
         clip: true
-        property int columns: width >= 1160 ? 4 : 3
+        property int columns: width < 860 ? 2 : 3
         cellWidth: width / columns
-        cellHeight: Math.min(240, cellWidth * 0.8)
+        cellHeight: Math.max(210, Math.min(280, height/2))
         model: [{id: "", name: "새 작업 만들기"}].concat(home.appState.recent || [])
         ScrollBar.vertical: ScrollBar {}
         delegate: ActionButton {
+            id: tile
             required property var modelData
-            width: workspaces.cellWidth - 14
-            height: workspaces.cellHeight - 14
+            width: workspaces.cellWidth - 16
+            height: workspaces.cellHeight - 16
             objectName: modelData.id ? "homeWorkspace_" + modelData.id : "newWorkspaceTile"
             enabled: !home.appState.navigationBlocked
-            padding: 23
+            padding: 24
+            Accessible.name: modelData.name + (modelData.id ? " 작업 열기" : "")
             background: Rectangle {
-                radius: 11
-                color: modelData.id ? (parent.hovered ? "#f0f5ff" : "#ffffff") : "#eaf1ff"
-                border.color: parent.hovered || !modelData.id ? "#84aaff" : "#e1e7eb"
+                radius: 10
+                color: !tile.modelData.id ? Theme.newWorkspace : (tile.down ? Theme.pressed : (tile.hovered ? Theme.control : Theme.surface))
+                border.color: !tile.modelData.id || tile.visualFocus ? Theme.primary : Theme.border
+                border.width: tile.visualFocus ? 2 : 1
+                Behavior on color { enabled: !Theme.transitioning; ColorAnimation { duration: Theme.duration } }
             }
-            contentItem: ColumnLayout {
-                spacing: 12
-                RowLayout {
-                    Layout.fillWidth: true
-                Item { visible: !modelData.id; Layout.fillWidth: true }
-                Label {
-                    text: modelData.id ? "작업" : "+"
-                    font.pixelSize: modelData.id ? 12 : 42
-                    color: "#2563eb"
-                    Layout.alignment: modelData.id ? Qt.AlignLeft : Qt.AlignHCenter
-                }
-                Item { Layout.fillWidth: true }
-                ToolButton {
-                    visible: !!modelData.id
-                    objectName: "workspaceManage_" + modelData.id
-                    implicitWidth: 34
-                    implicitHeight: 28
-                    contentItem: Item {
-                        Repeater { model: 3; Rectangle { required property int index; width: 3; height: 3; radius: 1.5; color: "#475569"; x: (parent.width-15)/2 + index*6; y: (parent.height-3)/2 } }
+            contentItem: Item {
+                ColumnLayout {
+                    anchors.fill: parent
+                    visible: !!tile.modelData.id
+                    spacing: 20
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label { text: tile.modelData.name; font.pixelSize: 20; font.weight: Font.DemiBold; Layout.fillWidth: true; elide: Text.ElideRight }
+                        ActionButton {
+                            objectName: "workspaceManage_" + tile.modelData.id
+                            iconName: "more"; text: ""; flat: true
+                            implicitWidth: 32; implicitHeight: 32
+                            enabled: !home.appState.busy
+                            Accessible.name: "작업 관리"
+                            ToolTip.visible: hovered; ToolTip.text: "작업 관리"
+                            onClicked: manageMenu.open()
+                            AppMenu {
+                                id: manageMenu
+                                AppMenuItem { objectName: "renameWorkspace_" + tile.modelData.id; text: "이름 변경"; onTriggered: home.manageRequested(tile.modelData, "rename") }
+                                AppMenuSeparator {}
+                                AppMenuItem { objectName: "deleteWorkspace_" + tile.modelData.id; text: "작업 삭제…"; onTriggered: home.manageRequested(tile.modelData, "delete") }
+                            }
+                        }
                     }
-                    enabled: !home.appState.busy
-                    ToolTip.visible: hovered
-                    ToolTip.text: "작업 관리"
-                    onClicked: manageMenu.open()
-                    Menu {
-                        id: manageMenu
-                        MenuItem { objectName: "renameWorkspace_" + modelData.id; text: "이름 변경"; onTriggered: home.manageRequested(modelData, "rename") }
-                        MenuItem { text: "작업 기록 백업"; onTriggered: home.manageRequested(modelData, "backup") }
-                        MenuSeparator {}
-                        MenuItem { objectName: "deleteWorkspace_" + modelData.id; text: "작업 삭제…"; onTriggered: home.manageRequested(modelData, "delete") }
+                    GridLayout {
+                        columns: 2
+                        columnSpacing: 16; rowSpacing: 10
+                        Layout.fillWidth: true
+                        Label { text: "촬영일"; color: Theme.secondary }
+                        Label { text: tile.modelData.shooting_date || ""; Layout.fillWidth: true; elide: Text.ElideRight }
+                        Label { text: "사진 범위"; color: Theme.secondary }
+                        Label { text: tile.modelData.id ? tile.modelData.start + "–" + tile.modelData.end + "번" : ""; Layout.fillWidth: true; elide: Text.ElideRight }
+                        Label { text: "옷 수"; color: Theme.secondary }
+                        Label { text: (tile.modelData.count || 0) + "벌" }
                     }
+                    Item { Layout.fillHeight: true }
                 }
+                ColumnLayout {
+                    anchors.centerIn: parent
+                    visible: !tile.modelData.id
+                    spacing: 12
+                    AppIcon { name: "plus"; ink: Theme.newWorkspaceText; Layout.alignment: Qt.AlignHCenter; Layout.preferredWidth: 40; Layout.preferredHeight: 40 }
+                    Label { text: "새 작업 만들기"; color: Theme.newWorkspaceText; font.pixelSize: 18; font.weight: Font.DemiBold; Layout.alignment: Qt.AlignHCenter }
+                    Label { text: "사진 폴더로 작업 시작"; color: Theme.newWorkspaceCaption; Layout.alignment: Qt.AlignHCenter }
                 }
-                Label {
-                    text: modelData.name
-                    Layout.fillWidth: true
-                    horizontalAlignment: modelData.id ? Text.AlignLeft : Text.AlignHCenter
-                    font.pixelSize: 16
-                    font.bold: true
-                    color: modelData.id ? "#203541" : "#2563eb"
-                    elide: Text.ElideRight
-                }
-                Label {
-                    Layout.fillWidth: true
-                    text: modelData.id ? modelData.shooting_date + " · " + modelData.start + "–" + modelData.end + "번" : "사진 폴더로 작업 시작"
-                    horizontalAlignment: modelData.id ? Text.AlignLeft : Text.AlignHCenter
-                    color: "#73818c"
-                    font.pixelSize: 12
-                }
-                Item { Layout.fillHeight: true }
-                Label { visible: !!modelData.id; text: "작업 열기 →"; color: "#73818c"; font.pixelSize: 12 }
             }
             onClicked: {
                 var key = modelData.id

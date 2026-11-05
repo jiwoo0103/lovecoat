@@ -22,6 +22,8 @@ from coatdesk_v2.category import POLICY_VERSION, DEFAULT_CATEGORY_THRESHOLDS  # 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--makensis", type=Path)
+    parser.add_argument("--ai-assets", type=Path, default=ROOT / "resources/ai")
+    parser.add_argument("--no-update-latest", action="store_true")
     args = parser.parse_args()
     release = ROOT / "dist-releases" / ("v2-"+uuid.uuid4().hex[:12])
     release.mkdir(parents=True)
@@ -43,9 +45,14 @@ def main():
                     target = licenses / distribution.metadata["Name"] / relative
                     target.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(source, target)
-    runtime = ROOT / "resources/ai"
+    runtime = args.ai_assets.resolve()
     if not (runtime / "manifest.json").is_file():
         raise SystemExit("학습 모델 resources/ai를 먼저 준비하세요.")
+    model_manifest = json.loads((runtime / "manifest.json").read_text(encoding="utf-8"))
+    for name, expected in model_manifest["files"].items():
+        with (runtime / name).open("rb") as stream:
+            if hashlib.file_digest(stream, "sha256").hexdigest() != expected:
+                raise SystemExit(f"판넬 모델 실행 자산 해시 불일치: {name}")
     category = runtime / "category"
     category_manifest = json.loads((category / "manifest.json").read_text(encoding="utf-8"))
     for name, expected in category_manifest["files"].items():
@@ -67,7 +74,7 @@ def main():
     environment["PATH"] = os.pathsep.join([str(Path(sys.executable).parent), str(Path(sys.base_prefix)),
                                           str(windows / "System32"), str(windows)])
     command = [sys.executable, "-m", "PyInstaller", "--noconfirm", "--onedir", "--windowed", "--name", "CoatDesk2",
-               "--workpath", str(ROOT / "build/v2-ai"), "--specpath", str(stage), "--distpath", str(release),
+               "--workpath", str(stage / "work"), "--specpath", str(stage), "--distpath", str(release),
                "--exclude-module", "PySide6.QtWebEngineCore", "--exclude-module", "PySide6.QtPdf",
                "--exclude-module", "matplotlib", "--exclude-module", "scipy",
                "--exclude-module", "pandas", "--exclude-module", "IPython", "--exclude-module", "pytest",
@@ -98,11 +105,11 @@ def main():
     compiler = args.makensis or (Path(shutil.which("makensis")) if shutil.which("makensis") else None)
     installer = release / f"CoatDesk-{__version__}-Setup.exe"
     if compiler:
-        subprocess.run([str(compiler.resolve()), "/INPUTCHARSET", "UTF8", f"/DPAYLOAD={payload}", f"/DOUTPUT={installer}",
+        subprocess.run([str(compiler.resolve()), "/INPUTCHARSET", "UTF8", f"/DAPP_VERSION={__version__}", f"/DPAYLOAD={payload}", f"/DOUTPUT={installer}",
                         f"/DUNINSTALL_MANIFEST={manifest}", str(ROOT / "installer/CoatDesk2.nsi")], cwd=ROOT, check=True)
     report = {"version": __version__, "executable": str(payload / "CoatDesk2.exe"), "trained_models": 4,
               "category_ai": True, "category_policy": POLICY_VERSION, "category_thresholds": DEFAULT_CATEGORY_THRESHOLDS,
-              "category_assets": category_manifest, "embedded_sheet_template": True, "excel_export": True,
+              "panel_assets": model_manifest, "category_assets": category_manifest, "embedded_sheet_template": True, "excel_export": True,
               "installer": str(installer) if installer.exists() else None,
               "google_configured": False, "files": len(files),
               "bytes": sum(p.stat().st_size for p in files),
@@ -111,7 +118,8 @@ def main():
         report["installer_sha256"] = hashlib.sha256(installer.read_bytes()).hexdigest()
     (release / "build-report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     # This pointer is separate from the original prototype's latest.txt.
-    (ROOT / "dist-releases/latest-v2.txt").write_text(str(payload.relative_to(ROOT) / "CoatDesk2.exe"), encoding="utf-8")
+    if not args.no_update_latest:
+        (ROOT / "dist-releases/latest-v2.txt").write_text(str(payload.relative_to(ROOT) / "CoatDesk2.exe"), encoding="utf-8")
     print(json.dumps(report, ensure_ascii=True, indent=2))
     if not compiler:
         print("NSIS was not found; onedir is ready, installer compilation was skipped.")

@@ -151,9 +151,9 @@ def test_dropdown_selected_blue_readable_and_tracks_reused_card(ui):
     def evaluate(expression):
         value, _ = QQmlExpression(context, combo, expression).evaluate()
         return value
-    assert evaluate('popup.contentItem.itemAtIndex(1).background.color.toString()') == "#2563eb"
+    assert evaluate('popup.contentItem.itemAtIndex(1).background.color.toString()') == "#4267a5"
     assert evaluate('popup.contentItem.itemAtIndex(1).contentItem.color.toString()') == "#ffffff"
-    assert evaluate('popup.contentItem.itemAtIndex(2).contentItem.color.toString()') == "#172b42"
+    assert evaluate('popup.contentItem.itemAtIndex(2).contentItem.color.toString()') == "#30302e"
     capture(window, "dropdown-selected-blue.png")
     QTest.keyClick(window, Qt.Key_Escape)
     select_option(window, combo, 2)
@@ -161,7 +161,7 @@ def test_dropdown_selected_blue_readable_and_tracks_reused_card(ui):
     QTest.qWait(30)
     assert combo.property("displayText") == "조끼"
     click(window, combo)
-    assert evaluate('popup.contentItem.itemAtIndex(3).background.color.toString()') == "#2563eb"
+    assert evaluate('popup.contentItem.itemAtIndex(3).background.color.toString()') == "#4267a5"
     QTest.keyClick(window, Qt.Key_Escape)
     assert backend.repository.load(keys[0]).garments[0].fields["category"] == "조끼"
 
@@ -179,7 +179,7 @@ def test_sleeve_threshold_default_change_restart_and_manual_confirmation(tmp_pat
     assert backend.workspace.active[0].fields["category"] == "자켓"
     assert backend.workspace.active[0].export_ready
     backend.setAiThresholds(90, 90, 90, 95)
-    assert backend.workspace.active[0].fields["category"] == "기타"
+    assert backend.workspace.active[0].fields["category"] == "자켓"
     assert backend.workspace.active[0].pending_review == ["category"]
     backend.shutdown()
     backend = Backend(repo.directory)

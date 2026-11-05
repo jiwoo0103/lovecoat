@@ -3,7 +3,7 @@ import threading
 from types import SimpleNamespace
 
 import pytest
-from PySide6.QtCore import QObject, QMetaObject, QPointF, Qt, Signal
+from PySide6.QtCore import QObject, QMetaObject, QPointF, Qt
 from PySide6.QtTest import QTest
 from PySide6.QtQml import QQmlEngine, QQmlExpression
 
@@ -28,7 +28,7 @@ def fields(**changes):
 def test_policy_boundaries(sleeve, length, held):
     result = decode([sleeve, 1-sleeve, length, 1-length])
     assert result["needs_review"] == held
-    assert result["display_category"] == ("기타" if held else "자켓")
+    assert result["display_category"] == "자켓"
     assert result["candidate"] == "자켓"
 
 
@@ -37,6 +37,23 @@ def test_long_sleeveless_stays_other_and_requires_review():
     assert result["candidate"] == "조끼"
     assert result["raw_category"] == result["display_category"] == "기타"
     assert result["needs_review"]
+
+
+def test_low_score_category_can_be_confirmed_without_opening_selector(ui):
+    backend, window, keys, _ = ui
+    def analyze(garment):
+        garment.suggestion = {"values": fields(), "category": decode([.99, .01, .7, .3])}
+        garment.apply_analysis()
+    backend.repository.edit(keys[0], ["0001"], analyze)
+    backend.openWorkspace(keys[0])
+    QTest.qWait(60)
+    selector = visual(window.contentItem(), "category_0001_combo")
+    assert selector.property("displayText") == "자켓"
+    assert backend.workspace.garments[0].pending_review == ["category"]
+    click(window, visual(window.contentItem(), "confirm_0001"))
+    saved = backend.repository.load(keys[0]).garments[0]
+    assert saved.fields["category"] == "자켓" and saved.export_ready
+    assert not visual(window.contentItem(), "confirm_0001").property("visible")
 
 
 def test_category_failure_preserves_panel_results_and_cache_identity(tmp_path):
@@ -176,22 +193,17 @@ def test_repeated_analysis_reuses_one_engine_and_one_python_worker(tmp_path):
     assert app
 
 
-def test_app_theme_stays_light_when_app_color_scheme_changes():
-    from coatdesk_v2.__main__ import force_light_theme
-    # Offscreen Qt reports Unknown for every requested color scheme. Exercise
-    # the same native signal contract without changing the Windows theme.
-    class Hints(QObject):
-        colorSchemeChanged = Signal(object)
-        scheme = Qt.ColorScheme.Unknown
-        def setColorScheme(self, scheme):
-            if self.scheme != scheme:
-                self.scheme = scheme
-                self.colorSchemeChanged.emit(scheme)
-    hints = Hints()
-    force_light_theme(SimpleNamespace(styleHints=lambda: hints))
-    assert hints.scheme == Qt.ColorScheme.Light
-    hints.setColorScheme(Qt.ColorScheme.Dark)
-    assert hints.scheme == Qt.ColorScheme.Light
+def test_app_theme_is_user_controlled_and_survives_restart(tmp_path):
+    application()
+    backend = Backend(tmp_path / "theme")
+    assert backend.state["theme"] == "light"
+    backend.setTheme("dark")
+    restored = Backend(tmp_path / "theme")
+    assert restored.state["theme"] == "dark"
+    backend.setTheme("invalid")
+    assert backend.theme == "dark"
+    backend.shutdown()
+    restored.shutdown()
 
 
 def test_all_grids_fast_mode_restore_and_selection_free_navigation(ui):
@@ -208,7 +220,7 @@ def test_all_grids_fast_mode_restore_and_selection_free_navigation(ui):
     backend.setLayout(2, 2)
     for _ in range(3):
         QTest.keyClick(window, Qt.Key_Right)
-    assert backend.page == 3 and not backend.selected
+    assert backend.page == 3 and "selectedCount" not in backend.state
     QTest.keyClick(window, Qt.Key_Left)
     assert backend.page == 2
     backend.pageBy(-2)

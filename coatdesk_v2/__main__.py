@@ -18,12 +18,6 @@ from . import __version__
 from .images import Photos
 
 
-def force_light_theme(app):
-    hints = app.styleHints()
-    hints.setColorScheme(Qt.ColorScheme.Light)
-    hints.colorSchemeChanged.connect(lambda scheme: hints.setColorScheme(Qt.ColorScheme.Light) if scheme != Qt.ColorScheme.Light else None)
-
-
 def main():
     parser = argparse.ArgumentParser(description="외투 작업실 2")
     parser.add_argument("--data-dir", type=Path)
@@ -53,7 +47,6 @@ def main():
     app.setApplicationName("CoatDesk v2")
     app.setOrganizationName("CoatDesk")
     app.setApplicationVersion(__version__)
-    force_light_theme(app)
     if Path("C:/Windows/Fonts/malgun.ttf").is_file():
         QFontDatabase.addApplicationFont("C:/Windows/Fonts/malgun.ttf")
     QQuickStyle.setStyle("Basic")
@@ -64,6 +57,7 @@ def main():
         print("같은 작업 저장소를 사용하는 외투 작업실 2가 실행 중입니다.", file=sys.stderr)
         return 2
     backend = Backend(directory)
+    app.styleHints().setColorScheme(Qt.ColorScheme.Dark if backend.theme == "dark" else Qt.ColorScheme.Light)
     engine = QQmlApplicationEngine()
     engine.rootContext().setContextProperty("appBackend", backend)
     engine.addImageProvider("photos", Photos())

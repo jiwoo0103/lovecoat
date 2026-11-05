@@ -19,12 +19,16 @@ def tensor(photo):
 
 class Models:
     def __init__(self,directory):
+        metadata = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
+        self.size_classes = metadata.get("size_classes", SIZES)
+        if self.size_classes not in (SIZES, ["70", *SIZES]):
+            raise ValueError("지원하지 않는 사이즈 모델 출력 순서입니다.")
         torch.set_num_threads(max(1,min(4,os.cpu_count() or 1)))
         self.detector=build_detector().cpu().eval()
         self.detector.transform.fixed_size=(448,448)
         self.detector.load_state_dict(torch.load(directory/"detector.pt",map_location="cpu",weights_only=True))
         self.classifiers={}
-        for task,classes in (("shape",SHAPES),("size",SIZES)):
+        for task,classes in (("shape",SHAPES),("size",self.size_classes)):
             model=PhotoClassifier(len(classes)).cpu().eval()
             model.load_state_dict(torch.load(directory/f"panel-{task}.pt",map_location="cpu",weights_only=True))
             self.classifiers[task]=model
@@ -58,7 +62,7 @@ class Models:
         value=(value-value.new_tensor([.485,.456,.406])[None,:,None,None])/value.new_tensor([.229,.224,.225])[None,:,None,None]
         probabilities={task:model(value).softmax(1)[0].tolist() for task,model in self.classifiers.items()}
         shape=SHAPES[int(np.argmax(probabilities["shape"]))]
-        raw=SIZES[int(np.argmax(probabilities["size"]))]
+        raw=self.size_classes[int(np.argmax(probabilities["size"]))]
         result["scores"].update(shape=max(probabilities["shape"]),size=max(probabilities["size"]))
         proposed={"age":"유아동" if shape=="child" else "성인","gender":"여성" if shape=="adult_female" else "남성"}
         result["candidates"].update(proposed)
@@ -74,7 +78,7 @@ class Models:
             result["values"]["size"]=size
         else:
             result["held"].append("사이즈" if consistent else "연령·사이즈 불일치")
-        result["probabilities"]={"shape":dict(zip(SHAPES,probabilities["shape"],strict=True)),"size":dict(zip(SIZES,probabilities["size"],strict=True))}
+        result["probabilities"]={"shape":dict(zip(SHAPES,probabilities["shape"],strict=True)),"size":dict(zip(self.size_classes,probabilities["size"],strict=True))}
         result["raw_size"]=raw
         notes=["확인 필요: "+", ".join(result["held"])] if result["held"] else []
         if shape=="child":

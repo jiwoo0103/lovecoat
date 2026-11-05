@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Window
 
-ColumnLayout {
+RowLayout {
     id: root
     property string label: ""
     property string value: ""
@@ -19,28 +19,37 @@ ColumnLayout {
         optionsPopup.close()
     }
     signal committed(string value)
-    spacing: 4
+    spacing: 8
     Layout.alignment: Qt.AlignTop
-    Label { text: root.label; color: "#64748b"; font.pixelSize: 12 }
+    Label { text: root.label; color: Theme.text; font.pixelSize: 12; Layout.preferredWidth: 62 }
     ComboBox {
         id: combo
         objectName: root.objectName + "_combo"
         Layout.fillWidth: true
-        implicitHeight: 38
+        implicitHeight: 32
         model: [""].concat(root.choices)
         currentIndex: Math.max(0, model.indexOf(root.value))
         displayText: root.value && model.indexOf(root.value) < 0 ? root.value + " · 다시 선택" :
                      (currentIndex > 0 && root.choiceLabels.length ? root.choiceLabels[currentIndex-1] : (currentText || "선택"))
         font.pixelSize: 14
-        indicator: Canvas {
+        font.weight: Font.DemiBold
+        Accessible.name: root.label + " " + combo.displayText + (root.requiresReview ? " · 확인 필요" : "")
+        indicator: AppIcon {
+            name: "down"
+            ink: Theme.secondary
             x: combo.width-width-10
             y: (combo.height-height)/2
             width: 12
-            height: 8
-            onPaint: { var ctx = getContext("2d"); ctx.strokeStyle = "#64748b"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(1,1); ctx.lineTo(6,6); ctx.lineTo(11,1); ctx.stroke() }
+            height: 12
         }
-        contentItem: Text { text: combo.displayText; color: "#172b42"; verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight; leftPadding: 10; rightPadding: 22; font: combo.font }
-        background: Rectangle { radius: 7; color: root.requiresReview ? "#fff5df" : (combo.hovered ? "#f0f5ff" : "#ffffff"); border.color: root.requiresReview ? "#f1b94c" : (combo.activeFocus ? "#2563eb" : "#d8e1ee") }
+        contentItem: RowLayout {
+            spacing: 6
+            Text { text: combo.displayText; color: root.requiresReview ? Theme.pendingText : Theme.text; verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight; font: combo.font; Layout.fillWidth: true }
+            AppIcon { visible: root.requiresReview; name: "warning"; ink: Theme.pendingText; Layout.preferredWidth: 14; Layout.preferredHeight: 14 }
+        }
+        leftPadding: 8
+        rightPadding: 26
+        background: Rectangle { radius: 6; color: combo.hovered ? Theme.control : "transparent"; border.color: combo.visualFocus ? Theme.focusRing : "transparent"; border.width: combo.visualFocus ? 2 : 0; Behavior on color { enabled: !Theme.transitioning; ColorAnimation { duration: Theme.duration } } }
         popup: Popup {
             id: optionsPopup
             parent: Overlay.overlay
@@ -54,7 +63,7 @@ ColumnLayout {
             closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
             onOpened: { if (root.host) root.host.popupCount++; list.currentIndex = combo.currentIndex; list.forceActiveFocus() }
             onClosed: if (root.host) root.host.popupCount--
-            background: Rectangle { color: "white"; radius: 9; border.color: "#d8e1ee" }
+            background: Rectangle { color: Theme.surface; radius: 9; border.color: Theme.border }
             contentItem: ListView {
                 id: list
                 clip: true
@@ -85,16 +94,5 @@ ColumnLayout {
         onActivated: root.committed(currentText)
         ToolTip.visible: hovered && root.hint.length > 0
         ToolTip.text: root.hint
-    }
-    Label {
-        visible: root.requiresReview && root.hint.length > 0
-        Layout.fillWidth: true
-        text: root.hint
-        color: "#956014"
-        font.pixelSize: 11
-        elide: Text.ElideRight
-        ToolTip.visible: hintMouse.containsMouse
-        ToolTip.text: root.hint
-        MouseArea { id: hintMouse; anchors.fill: parent; hoverEnabled: true; acceptedButtons: Qt.NoButton }
     }
 }

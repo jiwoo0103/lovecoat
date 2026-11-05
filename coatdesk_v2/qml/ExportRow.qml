@@ -17,10 +17,10 @@ Row {
             rightPadding: 6
             text: modelData
             font.bold: row.heading
-            color: row.heading ? "#183449" : "#334155"
+            color: row.heading ? Theme.text : Theme.text
             elide: Text.ElideRight
             verticalAlignment: Text.AlignVCenter
-            background: Rectangle { color: row.heading ? "#eaf1ff" : "transparent" }
+            background: Rectangle { color: row.heading ? Theme.selection : "transparent" }
         }
     }
 }

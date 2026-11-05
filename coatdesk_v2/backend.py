@@ -7,6 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from PySide6.QtCore import QAbstractListModel, QModelIndex, QObject, Property, QRunnable, QThreadPool, Qt, QUrl, Signal, Slot
+from PySide6.QtGui import QGuiApplication
 
 from . import excel
 from .domain import FIELDS, OPTIONS, Workspace, parse_errors, photo_path, shooting_date, validate_fields, validate_roi
@@ -82,6 +83,9 @@ class Backend(QObject):
     def __init__(self, directory: Path, engine_factory=RecognitionEngine):
         super().__init__()
         self.repository = Repository(directory)
+        self.theme = self.repository.setting("theme", "light")
+        if self.theme not in {"light", "dark"}:
+            self.theme = "light"
         self.thresholds = self.repository.setting("ai_thresholds", DEFAULT_THRESHOLDS)
         self.category_thresholds = self.repository.setting("category_thresholds", dict(DEFAULT_CATEGORY_THRESHOLDS))
         self.excel_path = self.repository.setting("excel_path", "")
@@ -93,15 +97,13 @@ class Backend(QObject):
         self._recognition_engine = None
         self.model = PageModel(self)
         self.workspace: Workspace | None = None
-        self.selected = set()
-        self.anchor = ""
         self.current = ""
         self.page = 0
         self.filtered = []
         self.mode = "review"
         self.filter_name = "전체"
         self.search = ""
-        self.class_filters = {"gender": "", "size": "", "age": ""}
+        self.class_filters = {"gender": "", "size": "", "age": "", "category": ""}
         self.show_home = True
         self.opened = self.repository.setting("open_workspaces", [])
         self.workspace_undo = {}
@@ -169,7 +171,7 @@ class Backend(QObject):
                 "source": workspace.source if workspace else "", "start": workspace.start if workspace else 1,
                 "end": workspace.end if workspace else 400, "errors": ", ".join(map(str, workspace.errors)) if workspace else "",
                 "emptyPhotoCodes": workspace.empty_photo_codes if workspace else [],
-                "counts": count, "recent": recent, "selectedCount": len(self.selected),
+                "counts": count, "recent": recent, "theme": self.theme,
                 "page": self.page+1, "pages": pages, "visibleCount": len(self.filtered), "mode": self.mode,
                 "cards": self.cards, "rows": self.rows, "frontOnly": self.front_only, "photoSize": self.photo_size,
                 "gridRows": self.layouts[self.mode][0], "gridColumns": self.layouts[self.mode][1], "fastInput": self.fast_input,
@@ -214,7 +216,7 @@ class Backend(QObject):
         values = garment.suggestion.get("values", {})
         return {"code": garment.code, "fields": garment.fields, "suggestions": values,
                 "status": "제외" if excluded else garment.status, "excluded": excluded,
-                "selected": garment.code in self.selected, "front": garment.front, "roi": garment.roi,
+                "front": garment.front, "roi": garment.roi,
                 "photo": image_url(self.workspace.source, garment.photos.get(garment.front, "")),
                 "head": image_url(self.workspace.source, garment.photos.get(garment.front, ""), garment.roi if garment.roi_manual else (garment.suggestion.get("roi") or garment.roi)),
                 "aiScores": garment.suggestion.get("scores", {}), "aiCandidates": garment.suggestion.get("candidates", {}),
@@ -233,9 +235,6 @@ class Backend(QObject):
             if reload:
                 self.workspace = self.repository.load(self.workspace.id)
                 self._workspace_summary = None
-            active_codes = {g.code for g in self.workspace.active}
-            if self.filter_name != "제외":
-                self.selected.intersection_update(active_codes)
             garments = self.workspace.in_range if self.filter_name == "제외" else self.workspace.active
             self.filtered = [g for g in garments if (self.filter_name != "제외" or int(g.code) in self.workspace.errors)
                              and (self.filter_name != "미확인" or not g.confirmed)
@@ -273,8 +272,9 @@ class Backend(QObject):
         if not self.workspace:
             return
         self.workspace.view.update(layouts=copy.deepcopy(self.layouts), fast_input=self.fast_input)
+        self.workspace.view.pop("selected", None)
         self.repository.update(self.workspace.id, view=self.workspace.view | {
-            "current": self.current, "selected": sorted(self.selected), "mode": self.mode,
+            "current": self.current, "mode": self.mode,
             "filter": self.filter_name, "search": self.search, "cards": self.cards, "rows": self.rows,
             "front_only": self.front_only, "photo_size": self.photo_size, "class_filters": self.class_filters})
 
@@ -376,10 +376,10 @@ class Backend(QObject):
             self.fast_input = view.get("fast_input", False)
             self.filter_name = view.get("filter", "전체")
             self.search = view.get("search", "")
-            self.class_filters = {"gender": "", "size": "", "age": "", **view.get("class_filters", {})}
+            old_filters = view.get("class_filters", {})
+            self.class_filters = {key: old_filters.get(key, "") if old_filters.get(key) in OPTIONS[key] else ""
+                                  for key in ("gender", "size", "age", "category")}
             self.current = view.get("current", "")
-            self.anchor = ""
-            self.selected = set(view.get("selected", []))
             self.undo_stack, self.plan = self.workspace_undo.get(workspace_id, []), None
             self.last_path = self.last_exports.get(workspace_id, "")
             self.page = 0
@@ -448,7 +448,6 @@ class Backend(QObject):
                 self.workspace = None
                 self._workspace_summary = None
                 self.show_home, self.plan = True, None
-                self.selected.clear()
                 self.filtered, self.undo_stack = [], []
                 self.current, self.last_path = "", ""
                 self.model.replace([])
@@ -493,8 +492,10 @@ class Backend(QObject):
             self._fail(error)
 
     @Slot(str, str, str)
-    def setClassificationFilters(self, gender, size, age):
-        self.class_filters = {"gender": gender, "size": size, "age": age}
+    @Slot(str, str, str, str)
+    def setClassificationFilters(self, gender, size, age, category=""):
+        self.class_filters = {key: value if value in OPTIONS[key] else ""
+                              for key, value in zip(("gender", "size", "age", "category"), (gender, size, age, category))}
         self.current = ""
         self.page = 0
         self._preference()
@@ -504,36 +505,24 @@ class Backend(QObject):
         self.error = ""
         self._notify()
 
-    @Slot(str, int)
-    def select(self, code, modifiers=0):
-        codes = [g.code for g in self.filtered]
-        if code not in codes:
+    @Slot(str)
+    def setTheme(self, theme):
+        if theme not in {"light", "dark"}:
             return
-        if modifiers & int(Qt.KeyboardModifier.ShiftModifier.value) and self.anchor in codes:
-            a, b = sorted((codes.index(self.anchor), codes.index(code)))
-            self.selected.update(codes[a:b+1])
-        elif modifiers & int(Qt.KeyboardModifier.ControlModifier.value):
-            self.selected.symmetric_difference_update({code})
-            self.anchor = code
-        else:
-            self.selected = {code}
-            self.anchor = code
-        self.current = code
         try:
-            self._view()
-            self._refresh(False)
+            self.repository.set_setting("theme", theme)
+            self.theme = theme
+            app = QGuiApplication.instance()
+            if isinstance(app, QGuiApplication):
+                app.styleHints().setColorScheme(Qt.ColorScheme.Dark if theme == "dark" else Qt.ColorScheme.Light)
+            self._notify()
         except Exception as error:
             self._fail(error)
 
     @Slot()
-    def selectPage(self):
-        self.selected.update(r["code"] for r in self.model.rows)
-        self._preference()
-
-    @Slot()
-    def clearSelection(self):
-        self.selected.clear()
-        self.anchor = ""
+    def resetFilters(self):
+        self.filter_name, self.search, self.current, self.page = "전체", "", "", 0
+        self.class_filters = {key: "" for key in ("gender", "size", "age", "category")}
         self._preference()
 
     @Slot(str)
@@ -622,7 +611,7 @@ class Backend(QObject):
         if self.workspace_locked:
             raise ValueError("엑셀에 저장 중인 작업입니다. 저장 후 입력을 바꾸세요.")
         if not codes:
-            raise ValueError("먼저 옷을 선택하세요.")
+            raise ValueError("입력할 옷을 찾을 수 없습니다.")
         if any(kind == "scope" for _, kind in self.jobs.values()):
             raise ValueError("사진 범위를 검사하는 동안 잠시 기다리세요.")
         previous = self.repository.edit(self.workspace.id, codes, change)
@@ -646,62 +635,12 @@ class Backend(QObject):
             self.saved = False
             self._fail(error)
 
-    @Slot(str, str, str, str)
-    def batchFields(self, category, gender, age, size):
-        try:
-            values = {k: v.strip() for k, v in zip(FIELDS, (category, gender, age, size)) if v.strip()}
-            validate_fields(values)
-            if not values:
-                raise ValueError("일괄 적용할 값을 선택하세요.")
-            def change(garment):
-                for key, value in values.items():
-                    garment.set_field(key, value)
-            self._edit(sorted(self.selected), change)
-        except Exception as error:
-            self._fail(error)
-
-    @Slot()
-    def applySuggestions(self):
-        try:
-            def change(garment):
-                values = {k: v for k, v in garment.suggestion.get("values", {}).items() if k in FIELDS and not garment.fields.get(k)}
-                if values:
-                    validate_fields(values)
-                    garment.apply_analysis()
-            self._edit(sorted(self.selected), change)
-        except Exception as error:
-            self._fail(error)
-
-    @Slot()
-    def confirmSelected(self):
-        try:
-            active = {g.code for g in self.workspace.active} if self.workspace else set()
-            if self.selected - active:
-                raise ValueError("제외한 옷은 확인 완료 대상이 아닙니다.")
-            def change(garment):
-                garment.confirm_review()
-            self._edit(sorted(self.selected), change)
-        except Exception as error:
-            self._fail(error)
-
     @Slot(str)
     def confirmGarment(self, code):
         try:
             if not self.workspace or code not in {g.code for g in self.workspace.active}:
                 raise ValueError("현재 작업 대상의 옷을 확인하세요.")
             self._edit([code], lambda garment: garment.confirm_review())
-        except Exception as error:
-            self._fail(error)
-
-    @Slot()
-    def clearSelected(self):
-        try:
-            def change(garment):
-                garment.fields = {}
-                garment.confirmed = False
-                garment.reviewed_values = {}
-                garment.field_sources = {}
-            self._edit(sorted(self.selected), change)
         except Exception as error:
             self._fail(error)
 
@@ -799,20 +738,6 @@ class Backend(QObject):
                 g.roi, g.confirmed, g.analysis_key = roi, False, ""
                 g.roi_manual = True
             self._edit([code], change)
-        except Exception as error:
-            self._fail(error)
-
-    @Slot()
-    def applyRoiToSelected(self):
-        if self.recognizing:
-            self._fail("분석을 중단한 뒤 영역을 적용하세요.")
-            return
-        try:
-            roi = copy.copy(next(g for g in self.workspace.garments if g.code == self.current).roi)
-            def change(g):
-                g.roi, g.confirmed, g.analysis_key = roi, False, ""
-                g.roi_manual = True
-            self._edit(sorted(self.selected), change)
         except Exception as error:
             self._fail(error)
 

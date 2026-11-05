@@ -1,4 +1,7 @@
+import pytest
+
 from coatdesk_v2.backend import Backend
+from coatdesk_v2.category import decode
 from coatdesk_v2.domain import Garment
 from coatdesk_v2.storage import Repository
 from test_v2_workspace import application, wait_for
@@ -15,6 +18,39 @@ def test_category_ai_completes_missing_category():
     assert garment.field_sources["category"] == "ai"
     assert garment.status == "확인 완료"
     assert garment.export_ready and not garment.confirmed
+
+
+@pytest.mark.parametrize("probabilities,category", [
+    ([.99, .01, .7, .3], "자켓"),
+    ([.99, .01, .3, .7], "코트"),
+    ([.3, .7, .99, .01], "조끼"),
+])
+def test_low_score_category_is_prefilled_and_one_confirmation_is_enough(tmp_path, probabilities, category):
+    garment = Garment("0001", {}, suggestion=suggestion(category=decode(probabilities)))
+    garment.apply_analysis()
+    assert garment.fields["category"] == category
+    assert garment.pending_review == ["category"]
+    assert not garment.export_ready
+    repo = Repository(tmp_path)
+    key = repo.create("prefill", "", tmp_path, 1, 1, "", [garment])
+    assert repo.load(key).garments[0].fields["category"] == category
+    repo.edit(key, ["0001"], lambda g: g.confirm_review())
+    restored = Repository(tmp_path).load(key).garments[0]
+    assert restored.fields["category"] == category
+    assert restored.export_ready
+
+
+def test_saved_low_score_other_is_replaced_by_candidate_without_overwriting_human_choice(tmp_path):
+    category = decode([.99, .01, .7, .3])
+    category["display_category"] = "기타"  # Saved by the previous UI policy.
+    garment = Garment("0001", {}, fields={"category": "기타", "gender": "남성", "age": "성인", "size": "M"},
+                      field_sources={"category": "ai"}, suggestion=suggestion(category=category))
+    repo = Repository(tmp_path)
+    key = repo.create("old", "", tmp_path, 1, 1, "", [garment])
+    assert repo.load(key).garments[0].fields["category"] == "자켓"
+    assert repo.load(key).garments[0].pending_review == ["category"]
+    repo.edit(key, ["0001"], lambda g: g.set_field("category", "코트"))
+    assert Repository(tmp_path).load(key).garments[0].fields["category"] == "코트"
 
 
 def test_category_ai_keeps_uncertain_and_missing_values_pending():

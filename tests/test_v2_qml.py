@@ -36,9 +36,10 @@ def test_qml_review_photo_zoom_dialogs_and_small_screen_have_no_runtime_warnings
     assert engine.rootObjects(), warnings
     window = engine.rootObjects()[0]
     QTest.qWait(250)
-    backend.selectPage()
-    backend.batchFields("코트", "여성", "성인", "M")
-    backend.confirmSelected()
+    for record in list(backend.model.rows):
+        for field, value in {"category": "코트", "gender": "여성", "age": "성인", "size": "M"}.items():
+            backend.setField(record["code"], field, value)
+        backend.confirmGarment(record["code"])
     assert backend.state["counts"]["confirmed"] == 4
     QTest.qWait(50)
     def find_item(item, name):
@@ -53,6 +54,20 @@ def test_qml_review_photo_zoom_dialogs_and_small_screen_have_no_runtime_warnings
     assert picture is not None
     point = picture.mapToScene(QPointF(picture.width()/2, picture.height()/2))
     QTest.mouseClick(window, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier, QPoint(int(point.x()), int(point.y())))
+    zoom = window.findChild(QObject, "zoomDialog")
+    for close_with_escape in (True, False):
+        QTest.mouseDClick(window, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier, point.toPoint())
+        QTest.qWait(100)
+        assert zoom.property("opened")
+        if close_with_escape:
+            QTest.keyClick(window, Qt.Key.Key_Escape)
+        else:
+            close_button = window.findChild(QObject, "zoomDialogCancel")
+            center = close_button.mapToScene(QPointF(close_button.width()/2, close_button.height()/2))
+            QTest.mouseClick(window, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier, center.toPoint())
+        QTest.qWait(100)
+        assert not zoom.property("opened"), (close_with_escape, window.activeFocusItem())
+        assert backend.current == "0001" and backend.page == 0
     QTest.keyClick(window, Qt.Key.Key_Right)
     assert backend.page == 1
     for mode, front in (("review", True), ("photos", True), ("photos", False)):
@@ -61,7 +76,7 @@ def test_qml_review_photo_zoom_dialogs_and_small_screen_have_no_runtime_warnings
         window.resize(1000, 720)
         QTest.qWait(100)
         assert not window.grabWindow().isNull()
-    for name in ("createDialog", "sourceDialog", "batchDialog", "viewDialog", "headDialog", "zoomDialog", "transferDialog"):
+    for name in ("createDialog", "sourceDialog", "viewDialog", "headDialog", "zoomDialog", "transferDialog"):
         dialog = window.findChild(QObject, name)
         assert dialog is not None
         QMetaObject.invokeMethod(dialog, "open")
@@ -92,8 +107,8 @@ def test_qml_excel_dialog_appends_two_dates_and_preserves_first_sheet(tmp_path):
             for day in ("20261002", "20261003")]
     for key in keys:
         backend.openWorkspace(key)
-        backend.selectPage()
-        backend.batchFields("자켓", "여성", "성인", "M")
+        for field, value in {"category": "자켓", "gender": "여성", "age": "성인", "size": "M"}.items():
+            backend.setField("0001", field, value)
     engine = QQmlApplicationEngine()
     engine.rootContext().setContextProperty("appBackend", backend)
     engine.addImageProvider("photos", Photos())

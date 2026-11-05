@@ -146,9 +146,8 @@ def test_home_management_tabs_selection_and_dialog_design(ui):
     assert backend.repository.load(keys[0]).name == "변경한 작업"
     click(window, visual(window.contentItem(), "homeWorkspace_" + keys[0]))
     wait_for(lambda: not backend.jobs)
-    backend.selectPage()
-    click(window, window.findChild(QObject, "clearSelectionButton"))
-    assert not backend.selected
+    assert window.findChild(QObject, "clearSelectionButton") is None
+    assert "selectedCount" not in backend.state
     click(window, visual(window.contentItem(), "closeWorkspace_" + keys[0]))
     assert backend.show_home and keys[0] not in backend.opened
     assert backend.repository.load(keys[0]).name == "변경한 작업"

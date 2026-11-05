@@ -9,20 +9,18 @@ Dialog {
     property bool acceptEnabled: true
     property bool destructive: false
     property bool autoAccept: true
+    property string acceptTone: "primary"
     signal primaryTriggered()
-    padding: 20
+    padding: 24
     topPadding: 12
     bottomPadding: 16
     spacing: 12
-    background: Rectangle { radius: 12; color: "#ffffff"; border.color: "#d8e1ee" }
-    header: Label {
-        text: dialog.title
-        padding: 20
-        bottomPadding: 8
-        font.pixelSize: 18
-        font.bold: true
-        color: "#183449"
-        wrapMode: Text.Wrap
+    background: Rectangle { radius: 12; color: Theme.surface; border.color: Theme.border }
+    Overlay.modal: Rectangle { color: Theme.modalOverlay }
+    header: RowLayout {
+        Label { text: dialog.title; Layout.fillWidth: true; Layout.leftMargin: 24; Layout.topMargin: 20; Layout.bottomMargin: 8; font.pixelSize: 20; font.weight: Font.DemiBold; color: Theme.text; wrapMode: Text.Wrap }
+        ThemeToggle { objectName: dialog.objectName + "ThemeToggle"; Layout.topMargin: 12 }
+        ActionButton { text: ""; iconName: "close"; flat: true; Layout.rightMargin: 16; Layout.topMargin: 12; implicitWidth: 32; implicitHeight: 32; Accessible.name: "닫기"; onClicked: dialog.reject() }
     }
     footer: RowLayout {
         visible: dialog.standardButtons !== Dialog.NoButton
@@ -43,6 +41,8 @@ Dialog {
             visible: !!(dialog.standardButtons & (Dialog.Ok | Dialog.Yes | Dialog.Save))
             enabled: dialog.acceptEnabled
             highlighted: true
+            tone: dialog.acceptTone
+            iconName: dialog.acceptTone === "export" ? "excel" : ""
             danger: dialog.destructive
             Layout.bottomMargin: 16
             implicitWidth: Math.max(100, contentItem.implicitWidth + 24)

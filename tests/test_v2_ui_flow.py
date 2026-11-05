@@ -168,26 +168,27 @@ def test_only_required_cards_confirm_and_editing_keeps_review_pending(ui):
     assert backend.repository.load(keys[0]).garments[0].export_ready
     # A normal populated garment requires no confirmation and no result notice.
     assert backend.repository.load(keys[0]).garments[2].export_ready
-    # Leaving a typed field for a photo must save the value and still select it.
+    # Leaving a typed field for a photo must save the value and focus that garment.
     select_option(window, visual(window.contentItem(), "size_0003_combo"), 3)
     click(window, visual(window.contentItem(), "photo_0004"))
     assert backend.repository.load(keys[0]).garments[2].fields["size"] == "S"
-    assert backend.selected == {"0004"}
+    assert backend.current == "0004"
+    assert "selectedCount" not in backend.state
     capture(window, "workspace-1000.png")
 
 
-def test_three_classification_rows_combine_with_search_and_review(ui):
+def test_four_classification_rows_combine_with_search_and_review(ui):
     backend, window, keys, _ = ui
     seed_review(backend, keys[0])
     initial_height = visual(window.contentItem(), "card_0002").height()
     click(window, window.findChild(QObject, "classificationButton"))
     popup = window.findChild(QObject, "classificationPopup")
     assert popup.property("opened")
-    for name, value in (("genderFilter", "여성"), ("sizeFilter", "L"), ("ageFilter", "성인")):
+    for name, value in (("categoryFilter", "코트"), ("genderFilter", "여성"), ("sizeFilter", "L"), ("ageFilter", "성인")):
         item = window.findChild(QObject, name)
         index = list(item.property("model")).index(value)
         select_option(window, item, index)
-    assert backend.state["classFilters"] == {"gender": "여성", "size": "L", "age": "성인"}
+    assert backend.state["classFilters"] == {"gender": "여성", "size": "L", "age": "성인", "category": "코트"}
     assert [g.code for g in backend.filtered] == ["0002", "0003"]
     assert abs(visual(window.contentItem(), "card_0002").height() - initial_height) < 2
     capture(window, "classification-1380.png")
@@ -200,61 +201,44 @@ def test_three_classification_rows_combine_with_search_and_review(ui):
     assert not backend.filtered
     click(window, window.findChild(QObject, "reviewFilterButton"))
     assert [g.code for g in backend.filtered] == ["0003"]
-    click(window, window.findChild(QObject, "inputVisibilitySwitch"))
+    assert window.findChild(QObject, "inputVisibilitySwitch") is None
+    QMetaObject.invokeMethod(window.findChild(QObject, "viewDialog"), "open")
+    click(window, window.findChild(QObject, "photoModeButton"))
     assert backend.mode == "photos"
-    click(window, window.findChild(QObject, "inputVisibilitySwitch"))
+    click(window, window.findChild(QObject, "reviewModeButton"))
     assert backend.mode == "review"
+    QMetaObject.invokeMethod(window.findChild(QObject, "viewDialog"), "close")
     click(window, window.findChild(QObject, "classificationButton"))
     click(window, window.findChild(QObject, "resetClassFilters"))
-    assert backend.state["classFilters"] == {"gender": "", "size": "", "age": ""}
+    assert backend.state["classFilters"] == {"gender": "", "size": "", "age": "", "category": ""}
 
 
-def test_input_visibility_switch_spacing_and_fast_input_setting(ui):
+def test_toolbar_without_selection_or_input_switch_and_fast_input_settings(ui):
     backend, window, keys, _ = ui
-    backend.openWorkspace(keys[0])
-    backend.setField("0001", "category", "코트")
-    backend.selectPage()
-    toggle = window.findChild(QObject, "inputVisibilitySwitch")
-    toolbar_names = ("analyzeButton", "reviewFilterButton", "inputVisibilitySwitch",
-                     "layoutButton", "garmentSearch", "classificationButton")
+    seed_review(backend, keys[0])
+    assert window.findChild(QObject, "inputVisibilitySwitch") is None
+    assert window.findChild(QObject, "clearSelectionButton") is None
+    toolbar_names = ("analyzeButton", "reviewFilterButton", "layoutButton", "garmentSearch", "classificationButton")
     for width, height in ((1000, 720), (1380, 920)):
         window.resize(width, height)
         QTest.qWait(100)
-        assert toggle.property("checked")
         controls = [window.findChild(QObject, name) for name in toolbar_names]
         for left, right in zip(controls, controls[1:]):
-            left_edge = left.mapToScene(QPointF(left.width(), 0)).x()
-            right_edge = right.mapToScene(QPointF(0, 0)).x()
-            assert right_edge - left_edge >= 11.5
-        assert controls[0].mapToScene(QPointF(0, 0)).x() >= 16
+            assert right.mapToScene(QPointF(0, 0)).x() - left.mapToScene(QPointF(left.width(), 0)).x() >= 11.5
         assert controls[-1].mapToScene(QPointF(controls[-1].width(), 0)).x() <= width - 16
-        capture(window, f"input-on-{width}.png")
-        click(window, toggle)
-        assert not toggle.property("checked") and backend.mode == "photos"
-        assert not visual(window.contentItem(), "category_0001_combo").property("visible")
-        capture(window, f"input-off-{width}.png")
-        click(window, toggle)
-        assert toggle.property("checked") and backend.mode == "review"
-        assert visual(window.contentItem(), "category_0001_combo").property("visible")
-        assert backend.repository.load(keys[0]).garments[0].fields["category"] == "코트"
-
-    click(window, window.findChild(QObject, "workspaceMenuButton"))
-    click(window, window.findChild(QObject, "viewSettingsAction"))
-    setting = window.findChild(QObject, "fastInputCheckBox")
-    assert not setting.property("checked")
-    click(window, setting)
-    assert backend.fast_input and setting.property("checked")
-    capture(window, "view-settings-fast-input.png")
+    QMetaObject.invokeMethod(window.findChild(QObject, "viewDialog"), "open")
+    click(window, window.findChild(QObject, "fastInputCheckBox"))
+    assert backend.fast_input
+    click(window, window.findChild(QObject, "photoModeButton"))
+    QMetaObject.invokeMethod(window.findChild(QObject, "viewDialog"), "close")
+    backend.openWorkspace(keys[1])
+    backend.openWorkspace(keys[0])
+    assert backend.mode == "photos" and backend.fast_input
+    QMetaObject.invokeMethod(window.findChild(QObject, "viewDialog"), "open")
+    click(window, window.findChild(QObject, "reviewModeButton"))
     QMetaObject.invokeMethod(window.findChild(QObject, "viewDialog"), "close")
     QTest.qWait(70)
     assert visual(window.contentItem(), "fast_category_0001_2").property("visible")
-    click(window, toggle)
-    backend.openWorkspace(keys[1])
-    backend.openWorkspace(keys[0])
-    QTest.qWait(70)
-    assert backend.mode == "photos" and not toggle.property("checked")
-    click(window, toggle)
-    assert backend.fast_input and visual(window.contentItem(), "fast_category_0001_2").property("visible")
     assert backend.repository.load(keys[0]).garments[0].fields["category"] == "코트"
 
 

@@ -6,7 +6,7 @@ os.environ.setdefault("QT_QUICK_BACKEND", "software")
 
 import pytest
 from PIL import Image
-from PySide6.QtCore import QThread, Qt
+from PySide6.QtCore import QThread
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
 
@@ -105,17 +105,16 @@ def test_atomic_edits_preserve_previous_values_on_failure_and_reopen(tmp_path):
         assert db.execute("PRAGMA user_version").fetchone()[0] == 1
 
 
-def test_backend_selection_batch_confirmation_undo_and_reopen(tmp_path):
+def test_backend_individual_edit_confirmation_undo_and_reopen_ignores_old_selection(tmp_path):
     app = application()
     repo, key = workspace(tmp_path, 9)
     backend = Backend(repo.directory)
     backend.openWorkspace(key)
-    backend.select("0001", 0)
-    backend.select("0003", Qt.KeyboardModifier.ShiftModifier.value)
-    assert backend.selected == {"0001", "0002", "0003"}
-    backend.batchFields("코트", "여성", "성인", "M")
+    for code in ("0001", "0002", "0003"):
+        for field, value in {"category": "코트", "gender": "여성", "age": "성인", "size": "M"}.items():
+            backend.setField(code, field, value)
     assert backend.state["counts"]["confirmed"] == 3
-    backend.confirmSelected()
+    backend.confirmGarment("0001")
     assert backend.state["counts"]["confirmed"] == 3
     backend.setField("0001", "size", "L")
     assert backend.state["counts"]["confirmed"] == 3
@@ -130,7 +129,8 @@ def test_backend_selection_batch_confirmation_undo_and_reopen(tmp_path):
     restored.openWorkspace(key)
     assert restored.current == current
     assert restored.mode == "photos"
-    assert restored.selected == backend.selected
+    assert "selectedCount" not in restored.state
+    assert not hasattr(restored, "selected")
     assert restored.workspace.active[0].fields["size"] == "M"
     backend.shutdown()
     restored.shutdown()
@@ -142,8 +142,7 @@ def test_confirmation_is_atomic_and_save_failure_is_visible(tmp_path, monkeypatc
     repo, key = workspace(tmp_path)
     backend = Backend(repo.directory)
     backend.openWorkspace(key)
-    backend.selectPage()
-    backend.confirmSelected()
+    backend.confirmGarment("0001")
     assert "모두 입력" in backend.error
     assert repo.load(key).counts["confirmed"] == 0
     def failed(*args):
@@ -176,8 +175,7 @@ def test_worker_results_are_queued_to_ui_and_analysis_resumes_without_overwrite(
     wait_for(lambda: not backend.jobs)
     assert len(calls) == 3
     assert all(t == app.thread() for t in threads)
-    backend.select("0001", 0)
-    backend.applySuggestions()
+    backend.focusGarment("0001")
     g = repo.load(key).garments[0]
     assert g.fields["size"] == "L"
     assert g.fields["gender"] == "여성"
@@ -235,8 +233,8 @@ def test_changing_excel_path_or_input_discards_preview(tmp_path):
     repo, key = workspace(tmp_path, 1)
     backend = Backend(repo.directory)
     backend.openWorkspace(key)
-    backend.selectPage()
-    backend.batchFields("자켓", "여성", "성인", "M")
+    for field, value in {"category": "자켓", "gender": "여성", "age": "성인", "size": "M"}.items():
+        backend.setField("0001", field, value)
     path = tmp_path / "외투목록.xlsx"
     backend.previewExcel(str(path), "20261024")
     wait_for(lambda: not backend.jobs)

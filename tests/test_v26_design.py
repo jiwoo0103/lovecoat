@@ -1,0 +1,137 @@
+"""Exercise theme transitions, retained editing and all styled dialogs in QML."""
+from PySide6.QtCore import QMetaObject, QObject, Qt
+from PySide6.QtQml import QQmlEngine, QQmlExpression
+from PySide6.QtTest import QTest
+
+from coatdesk_v2.backend import Backend
+from test_v2_ui_flow import capture, click, seed_review, visual
+from test_v2_ui_flow import ui as ui
+
+
+def test_icon_only_theme_toggle_animates_persists_and_works_in_dialog(ui):
+    backend, window, keys, _ = ui
+    backend.recent = backend.repository.recent()
+    backend._notify()
+    QTest.qWait(100)
+    toggle = window.findChild(QObject, "themeToggle")
+    symbol = window.findChild(QObject, "themeIcon")
+    assert toggle.property("visible") and toggle.property("enabled")
+    assert backend.theme == "light" and symbol.property("phase") == 0
+    capture(window, "v26-home-light.png")
+    click(window, toggle)
+    assert backend.theme == "dark"
+    assert 0 < symbol.property("phase") < 1
+    QTest.qWait(500)
+    assert symbol.property("phase") == 1
+    assert toggle.property("actionLabel") == "라이트 모드로 전환"
+    assert window.property("color").name() == "#191919"
+    capture(window, "v26-home-dark.png")
+    again = Backend(backend.repository.directory)
+    assert again.theme == "dark"
+    again.shutdown()
+    dialog = window.findChild(QObject, "createDialog")
+    QMetaObject.invokeMethod(dialog, "open")
+    QTest.qWait(80)
+    click(window, window.findChild(QObject, "createDialogThemeToggle"))
+    QTest.qWait(500)
+    assert dialog.property("opened") and backend.theme == "light"
+    capture(window, "v26-create-light.png")
+    click(window, window.findChild(QObject, "createDialogThemeToggle"))
+    QTest.qWait(500)
+    capture(window, "v26-create-dark.png")
+    QMetaObject.invokeMethod(dialog, "close")
+    backend.openWorkspace(keys[0])
+    assert toggle.property("visible") and backend.theme == "dark"
+    # Reverse a transition while it is running; settle at the final requested theme.
+    click(window, toggle)
+    click(window, toggle)
+    QTest.qWait(500)
+    assert symbol.property("phase") == 1 and backend.theme == "dark"
+
+
+def test_themed_dialogs_and_pending_fields_keep_actions_visible_at_minimum_size(ui):
+    backend, window, keys, _ = ui
+    seed_review(backend, keys[0])
+    window.resize(1000, 720)
+    for theme in ("light", "dark"):
+        backend.setTheme(theme)
+        QTest.qWait(500)
+        capture(window, f"v26-work-{theme}.png")
+        assert visual(window.contentItem(), "card_0001").property("color").name() == ("#fff9ea" if theme == "light" else "#302c22")
+        assert window.findChild(QObject, "excelExportButton").property("visible")
+        for name in ("createDialog", "recentDialog", "sourceDialog", "aiDialog", "viewDialog", "headDialog", "zoomDialog", "transferDialog"):
+            dialog = window.findChild(QObject, name)
+            QMetaObject.invokeMethod(dialog, "open")
+            QTest.qWait(70)
+            assert dialog.property("opened")
+            assert dialog.property("x") >= 0 and dialog.property("y") >= 0
+            assert dialog.property("x") + dialog.property("width") <= window.width()
+            assert dialog.property("y") + dialog.property("height") <= window.height()
+            capture(window, f"v26-{name}-{theme}.png")
+            QMetaObject.invokeMethod(dialog, "close")
+        assert window.findChild(QObject, "batchDialog") is None
+        assert window.findChild(QObject, "clearSelectionButton") is None
+
+
+def test_category_filter_restore_legacy_selection_and_last_review_escape(ui):
+    backend, window, keys, _ = ui
+    seed_review(backend, keys[0])
+    backend.repository.update(keys[0], view={"selected": ["0001", "0002"], "class_filters": {"gender": "여성", "size": "L", "age": "성인"}})
+    backend.openWorkspace(keys[0])
+    assert backend.class_filters["category"] == ""
+    assert "selectedCount" not in backend.state and not hasattr(backend, "selected")
+    backend.setClassificationFilters("여성", "L", "성인", "코트")
+    assert [g.code for g in backend.filtered] == ["0002", "0003"]
+    backend.openWorkspace(keys[1])
+    backend.openWorkspace(keys[0])
+    assert backend.class_filters["category"] == "코트"
+    backend.setFilter("확인 필요")
+    assert [g.code for g in backend.filtered] == ["0002"]
+    backend.confirmGarment("0002")
+    QTest.qWait(60)
+    assert not backend.filtered
+    click(window, visual(window.contentItem(), "resetAllFilters"))
+    assert len(backend.filtered) == 4 and backend.filter_name == "전체"
+    backend.setField("0003", "size", "S")
+    QTest.keyClick(window, Qt.Key_Z, Qt.ControlModifier)
+    QTest.qWait(60)
+    assert backend.repository.load(keys[0]).garments[2].fields["size"] == "L"
+    assert "selected" not in backend.repository.load(keys[0]).view
+
+
+def test_readable_theme_text_pairs_and_menu_hides_undo(ui):
+    backend, window, keys, _ = ui
+    backend.openWorkspace(keys[0])
+    context = QQmlEngine.contextForObject(window)
+
+    def color(token):
+        value, error = QQmlExpression(context, window, "Theme." + token).evaluate()
+        assert not error
+        return value
+
+    def luminance(value):
+        channels = [value.redF(), value.greenF(), value.blueF()]
+        linear = [v/12.92 if v <= .04045 else ((v+.055)/1.055)**2.4 for v in channels]
+        return sum(v*w for v, w in zip(linear, (.2126, .7152, .0722)))
+
+    for theme in ("light", "dark"):
+        backend.setTheme(theme)
+        QTest.qWait(500)
+        for foreground, background in (("text", "surface"), ("secondary", "surface"), ("text", "control"),
+                                       ("primaryText", "primary"), ("primaryText", "primaryHover"),
+                                       ("primaryText", "exportColor"), ("primaryText", "exportHover"),
+                                       ("warningText", "warning"), ("pendingText", "pending"),
+                                       ("accentText", "surface"), ("accentText", "canvas")):
+            a, b = sorted((luminance(color(foreground)), luminance(color(background))))
+            assert (b+.05)/(a+.05) >= 4.5, (theme, foreground, background)
+        menu = window.findChild(QObject, "workspaceMenu")
+        QMetaObject.invokeMethod(menu, "open")
+        QTest.qWait(100)
+        value, error = QQmlExpression(QQmlEngine.contextForObject(menu), menu,
+            "Array.from({length: count}, function(_, i) { return itemAt(i).text || ''; }).filter(function(t) { return !!t; })").evaluate()
+        assert not error
+        if hasattr(value, "toVariant"):
+            value = value.toVariant()
+        assert value == ["엑셀로 저장", "보기 설정", "고급 설정", "작업 관리"]
+        capture(window, f"v26-menu-{theme}.png")
+        QMetaObject.invokeMethod(menu, "close")

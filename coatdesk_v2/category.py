@@ -20,6 +20,7 @@ def decode(probabilities, sleeve_threshold=SLEEVE_THRESHOLD, length_threshold=LE
     absent, long = probabilities[1] > probabilities[0], probabilities[3] > probabilities[2]
     sleeve, length = probabilities[int(absent)], probabilities[2+int(long)]
     candidate = "조끼" if absent else ("코트" if long else "자켓")
+    raw_category = "기타" if absent and long else candidate
     reasons = []
     if absent and long:
         reasons.append("긴 민소매 예외")
@@ -27,8 +28,8 @@ def decode(probabilities, sleeve_threshold=SLEEVE_THRESHOLD, length_threshold=LE
         reasons.append("소매 유무 점수 미달")
     if length < length_threshold:
         reasons.append("기장 점수 미달")
-    return {"candidate": candidate, "raw_category": "기타" if absent and long else candidate,
-            "display_category": "기타" if reasons else candidate, "needs_review": bool(reasons),
+    return {"candidate": candidate, "raw_category": raw_category,
+            "display_category": raw_category, "needs_review": bool(reasons),
             "review_reasons": reasons, "score": min(sleeve, length), "sleeve_score": sleeve,
             "length_score": length, "probabilities": list(probabilities), "policy_version": POLICY_VERSION,
             "thresholds": {"sleeve": sleeve_threshold, "length": length_threshold}}
