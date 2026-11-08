@@ -22,3 +22,29 @@ Tesseract 고지는 기존 2.0 배포에 해당하며, 2.1 인식 경로에는 �
 - NSIS 3.13: 설치 프로그램 제작에 사용합니다. zlib/libpng 라이선스 및 포함 구성요소 고지: <https://nsis.sourceforge.io/License>. 빌드 도구는 설치 대상 PC에 설치하지 않습니다.
 
 사진은 사용자가 제공한 원본을 로컬에서 읽습니다. 원본 옷 사진과 라벨은 설치물에 넣지 않습니다. 카테고리 전처리에 필요한 판넬 참조 조각 3개와 마스크만 실행 자산으로 포함하며 Git에는 올리지 않습니다.
+
+## Microsoft Fluent Emoji Coat (High Contrast)
+
+제목 표시줄과 Windows 설치 파일 및 앱 아이콘에 [Microsoft Fluent Emoji의 Coat 벡터](https://github.com/microsoft/fluentui-emoji/tree/main/assets/Coat)를 사용합니다. 제목 표시줄에서는 화면 테마에 맞춰 단색으로 표시합니다.
+
+MIT License
+
+Copyright (c) Microsoft Corporation.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

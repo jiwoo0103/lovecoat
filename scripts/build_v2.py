@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from coatdesk_v2 import __version__  # noqa: E402 - direct script invocation needs the repository root
+from coatdesk_v2 import APP_NAME, __version__  # noqa: E402 - direct script invocation needs the repository root
 from coatdesk_v2.category import POLICY_VERSION, DEFAULT_CATEGORY_THRESHOLDS  # noqa: E402
 
 
@@ -60,8 +60,10 @@ def main():
             raise SystemExit(f"카테고리 실행 자산 해시 불일치: {name}")
     if "+cpu" not in importlib.metadata.version("torch"):
         raise SystemExit("CPU 전용 PyTorch 빌드 환경을 사용하세요.")
+    icon = ROOT / "coatdesk_v2/CoatDesk.ico"
     additions = [(runtime, "resources/ai"), (ROOT / "resources/standard_sheet.json", "resources"),
                  (ROOT / "coatdesk_v2/qml", "coatdesk_v2/qml"),
+                 (icon, "coatdesk_v2"),
                  (licenses, "licenses"), (ROOT / "README.md", "."), (ROOT / "THIRD_PARTY_NOTICES.md", ".")]
     # Some build runtimes load an additional distrust bundle next to ssl.py.
     # Preserve that policy in the frozen app, where ssl.__file__ is in _internal.
@@ -69,11 +71,24 @@ def main():
     if distrust_bundle.is_file():
         additions.append((distrust_bundle, "."))
     ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    version_file = stage / "app-version.txt"
+    version_tuple = (*map(int, __version__.split(".")), 0)
+    version_file.write_text(f"""VSVersionInfo(
+  ffi=FixedFileInfo(filevers={version_tuple}, prodvers={version_tuple}, OS=4, fileType=1),
+  kids=[StringFileInfo([StringTable('041204B0', [
+    StringStruct('FileDescription', {APP_NAME!r}),
+    StringStruct('ProductName', {APP_NAME!r}),
+    StringStruct('FileVersion', {__version__!r}),
+    StringStruct('ProductVersion', {__version__!r}),
+    StringStruct('OriginalFilename', 'CoatDesk2.exe')
+  ])]), VarFileInfo([VarStruct('Translation', [1042, 1200])])]
+)\n""", encoding="utf-8")
     environment = os.environ.copy()
     windows = Path(os.environ.get("SystemRoot", "C:/Windows"))
     environment["PATH"] = os.pathsep.join([str(Path(sys.executable).parent), str(Path(sys.base_prefix)),
                                           str(windows / "System32"), str(windows)])
     command = [sys.executable, "-m", "PyInstaller", "--noconfirm", "--onedir", "--windowed", "--name", "CoatDesk2",
+               "--icon", str(icon), "--version-file", str(version_file),
                "--workpath", str(stage / "work"), "--specpath", str(stage), "--distpath", str(release),
                "--exclude-module", "PySide6.QtWebEngineCore", "--exclude-module", "PySide6.QtPdf",
                "--exclude-module", "matplotlib", "--exclude-module", "scipy",

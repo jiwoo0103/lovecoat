@@ -9,17 +9,17 @@ import sys
 from pathlib import Path
 
 from PySide6.QtCore import QLockFile, QStandardPaths, QTimer, QUrl, Qt
-from PySide6.QtGui import QFontDatabase, QGuiApplication
+from PySide6.QtGui import QFontDatabase, QGuiApplication, QIcon
 from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtQuickControls2 import QQuickStyle
 
 from .backend import Backend
-from . import __version__
+from . import APP_NAME, __version__
 from .images import Photos
 
 
 def main():
-    parser = argparse.ArgumentParser(description="외투 작업실 2")
+    parser = argparse.ArgumentParser(description=APP_NAME)
     parser.add_argument("--data-dir", type=Path)
     parser.add_argument("--source", type=Path, help="개발·검증용 사진 상위 폴더")
     parser.add_argument("--range-start", type=int, default=1)
@@ -45,8 +45,10 @@ def main():
             atexit.register(kernel.CloseHandle, mutex)
     app = QGuiApplication(sys.argv[:1])
     app.setApplicationName("CoatDesk v2")
+    app.setApplicationDisplayName(APP_NAME)
     app.setOrganizationName("CoatDesk")
     app.setApplicationVersion(__version__)
+    app.setWindowIcon(QIcon(str(Path(__file__).with_name("CoatDesk.ico"))))
     if Path("C:/Windows/Fonts/malgun.ttf").is_file():
         QFontDatabase.addApplicationFont("C:/Windows/Fonts/malgun.ttf")
     QQuickStyle.setStyle("Basic")
@@ -54,7 +56,7 @@ def main():
     directory.mkdir(parents=True, exist_ok=True)
     lock = QLockFile(str(directory / "app.lock"))
     if not lock.tryLock(100):
-        print("같은 작업 저장소를 사용하는 외투 작업실 2가 실행 중입니다.", file=sys.stderr)
+        print(f"같은 작업 저장소를 사용하는 {APP_NAME}이 실행 중입니다.", file=sys.stderr)
         return 2
     backend = Backend(directory)
     app.styleHints().setColorScheme(Qt.ColorScheme.Dark if backend.theme == "dark" else Qt.ColorScheme.Light)

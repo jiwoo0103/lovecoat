@@ -3,7 +3,11 @@ Unicode True
 !include "LogicLib.nsh"
 !include "FileFunc.nsh"
 
-Name "외투 작업실 2"
+!define APP_NAME "외투작업실"
+!define LEGACY_NAME "외투 작업실 2"
+!define UNINSTALL_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\CoatDeskV2"
+
+Name "${APP_NAME}"
 OutFile "${OUTPUT}"
 InstallDir "$LOCALAPPDATA\Programs\CoatDesk"
 RequestExecutionLevel user
@@ -12,12 +16,14 @@ SetCompressor /FINAL zlib
   !define APP_VERSION "2.5.0"
 !endif
 VIProductVersion "${APP_VERSION}.0"
-VIAddVersionKey /LANG=1042 "ProductName" "외투 작업실 2"
-VIAddVersionKey /LANG=1042 "FileDescription" "외투 작업실 2 설치 프로그램"
+VIAddVersionKey /LANG=1042 "ProductName" "${APP_NAME}"
+VIAddVersionKey /LANG=1042 "FileDescription" "${APP_NAME} 설치 프로그램"
 VIAddVersionKey /LANG=1042 "FileVersion" "${APP_VERSION}"
 VIAddVersionKey /LANG=1042 "LegalCopyright" "CoatDesk"
 
 Var Sandbox
+!define MUI_ICON "${PAYLOAD}\_internal\coatdesk_v2\CoatDesk.ico"
+!define MUI_UNICON "${MUI_ICON}"
 !define MUI_ABORTWARNING
 !define MUI_FINISHPAGE_NOAUTOCLOSE
 !insertmacro MUI_PAGE_WELCOME
@@ -33,7 +39,7 @@ Var Sandbox
   System::Call 'kernel32::OpenMutexW(i 0x100000, i 0, w "Local\CoatDeskV2Running") p.r0'
   ${If} $0 != 0
     System::Call 'kernel32::CloseHandle(p r0)'
-    MessageBox MB_OK|MB_ICONSTOP "외투 작업실 2를 종료한 뒤 다시 실행하세요."
+    MessageBox MB_OK|MB_ICONSTOP "${APP_NAME}을 종료한 뒤 다시 실행하세요."
     Abort
   ${EndIf}
 !macroend
@@ -67,22 +73,40 @@ Section "프로그램 (필수)" Main
     FileOpen $0 "$INSTDIR\.sandbox-install" w
     FileClose $0
   ${Else}
-    CreateDirectory "$SMPROGRAMS\외투 작업실 2"
-    CreateShortcut "$SMPROGRAMS\외투 작업실 2\외투 작업실 2.lnk" "$INSTDIR\CoatDesk2.exe"
-    CreateShortcut "$SMPROGRAMS\외투 작업실 2\호환 모드.lnk" "$INSTDIR\CoatDesk2.exe" "--software-rendering"
-    CreateShortcut "$SMPROGRAMS\외투 작업실 2\프로그램 제거.lnk" "$INSTDIR\Uninstall.exe"
-    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\CoatDeskV2" "DisplayName" "외투 작업실 2"
-    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\CoatDeskV2" "DisplayVersion" "${APP_VERSION}"
-    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\CoatDeskV2" "UninstallString" '$\"$INSTDIR\Uninstall.exe$\"'
-    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\CoatDeskV2" "InstallLocation" "$INSTDIR"
-    WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\CoatDeskV2" "NoModify" 1
-    WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\CoatDeskV2" "NoRepair" 1
+    ReadRegStr $1 HKCU "${UNINSTALL_KEY}" "InstallLocation"
+    ClearErrors
+    CreateDirectory "$SMPROGRAMS\${APP_NAME}"
+    CreateShortcut "$SMPROGRAMS\${APP_NAME}\${APP_NAME}.lnk" "$INSTDIR\CoatDesk2.exe"
+    CreateShortcut "$SMPROGRAMS\${APP_NAME}\호환 모드.lnk" "$INSTDIR\CoatDesk2.exe" "--software-rendering"
+    CreateShortcut "$SMPROGRAMS\${APP_NAME}\프로그램 제거.lnk" "$INSTDIR\Uninstall.exe"
+    ${If} $1 == $INSTDIR
+      ${IfNot} ${Errors}
+        Delete "$SMPROGRAMS\${LEGACY_NAME}\${LEGACY_NAME}.lnk"
+        Delete "$SMPROGRAMS\${LEGACY_NAME}\호환 모드.lnk"
+        Delete "$SMPROGRAMS\${LEGACY_NAME}\프로그램 제거.lnk"
+        RMDir "$SMPROGRAMS\${LEGACY_NAME}"
+      ${EndIf}
+      ${If} ${FileExists} "$DESKTOP\${LEGACY_NAME}.lnk"
+        ClearErrors
+        CreateShortcut "$DESKTOP\${APP_NAME}.lnk" "$INSTDIR\CoatDesk2.exe"
+        ${IfNot} ${Errors}
+          Delete "$DESKTOP\${LEGACY_NAME}.lnk"
+        ${EndIf}
+      ${EndIf}
+    ${EndIf}
+    WriteRegStr HKCU "${UNINSTALL_KEY}" "DisplayName" "${APP_NAME}"
+    WriteRegStr HKCU "${UNINSTALL_KEY}" "DisplayVersion" "${APP_VERSION}"
+    WriteRegStr HKCU "${UNINSTALL_KEY}" "DisplayIcon" '"$INSTDIR\CoatDesk2.exe",0'
+    WriteRegStr HKCU "${UNINSTALL_KEY}" "UninstallString" '$\"$INSTDIR\Uninstall.exe$\"'
+    WriteRegStr HKCU "${UNINSTALL_KEY}" "InstallLocation" "$INSTDIR"
+    WriteRegDWORD HKCU "${UNINSTALL_KEY}" "NoModify" 1
+    WriteRegDWORD HKCU "${UNINSTALL_KEY}" "NoRepair" 1
   ${EndIf}
 SectionEnd
 
 Section /o "바탕화면 바로가기" DesktopShortcut
   ${If} $Sandbox != "1"
-    CreateShortcut "$DESKTOP\외투 작업실 2.lnk" "$INSTDIR\CoatDesk2.exe"
+    CreateShortcut "$DESKTOP\${APP_NAME}.lnk" "$INSTDIR\CoatDesk2.exe"
   ${EndIf}
 SectionEnd
 
@@ -95,12 +119,12 @@ Section "Uninstall"
   SetShellVarContext current
   IfFileExists "$INSTDIR\.sandbox-install" sandbox_cleanup regular_cleanup
   regular_cleanup:
-    Delete "$DESKTOP\외투 작업실 2.lnk"
-    Delete "$SMPROGRAMS\외투 작업실 2\외투 작업실 2.lnk"
-    Delete "$SMPROGRAMS\외투 작업실 2\호환 모드.lnk"
-    Delete "$SMPROGRAMS\외투 작업실 2\프로그램 제거.lnk"
-    RMDir "$SMPROGRAMS\외투 작업실 2"
-    DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\CoatDeskV2"
+    Delete "$DESKTOP\${APP_NAME}.lnk"
+    Delete "$SMPROGRAMS\${APP_NAME}\${APP_NAME}.lnk"
+    Delete "$SMPROGRAMS\${APP_NAME}\호환 모드.lnk"
+    Delete "$SMPROGRAMS\${APP_NAME}\프로그램 제거.lnk"
+    RMDir "$SMPROGRAMS\${APP_NAME}"
+    DeleteRegKey HKCU "${UNINSTALL_KEY}"
   sandbox_cleanup:
     !include "${UNINSTALL_MANIFEST}"
     Delete "$INSTDIR\.sandbox-install"

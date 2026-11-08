@@ -1,11 +1,12 @@
 """Exercise theme transitions, retained editing and all styled dialogs in QML."""
-from PySide6.QtCore import QMetaObject, QObject, Qt
+from PySide6.QtCore import QMetaObject, QObject, QPoint, QPointF, Qt
 from PySide6.QtQml import QQmlEngine, QQmlExpression
 from PySide6.QtTest import QTest
 
 from coatdesk_v2.backend import Backend
 from test_v2_ui_flow import capture, click, seed_review, visual
 from test_v2_ui_flow import ui as ui
+from test_v2_workspace import wait_for
 
 
 def test_icon_only_theme_toggle_animates_persists_and_works_in_dialog(ui):
@@ -57,7 +58,10 @@ def test_themed_dialogs_and_pending_fields_keep_actions_visible_at_minimum_size(
         backend.setTheme(theme)
         QTest.qWait(500)
         capture(window, f"v26-work-{theme}.png")
-        assert visual(window.contentItem(), "card_0001").property("color").name() == ("#fff9ea" if theme == "light" else "#302c22")
+        pending = visual(window.contentItem(), "card_0001")
+        normal = visual(window.contentItem(), "card_0004")
+        assert pending.property("color") == normal.property("color")
+        assert QQmlExpression(QQmlEngine.contextForObject(pending), pending, "border.width").evaluate()[0] == 2
         assert window.findChild(QObject, "excelExportButton").property("visible")
         for name in ("createDialog", "recentDialog", "sourceDialog", "aiDialog", "viewDialog", "headDialog", "zoomDialog", "transferDialog"):
             dialog = window.findChild(QObject, name)
@@ -120,7 +124,8 @@ def test_readable_theme_text_pairs_and_menu_hides_undo(ui):
         for foreground, background in (("text", "surface"), ("secondary", "surface"), ("text", "control"),
                                        ("primaryText", "primary"), ("primaryText", "primaryHover"),
                                        ("primaryText", "exportColor"), ("primaryText", "exportHover"),
-                                       ("warningText", "warning"), ("pendingText", "pending"),
+                                       ("warningText", "warning"), ("pendingText", "pending"), ("pendingText", "reviewField"),
+                                       ("text", "workspaceHeading"),
                                        ("accentText", "surface"), ("accentText", "canvas")):
             a, b = sorted((luminance(color(foreground)), luminance(color(background))))
             assert (b+.05)/(a+.05) >= 4.5, (theme, foreground, background)
@@ -135,3 +140,50 @@ def test_readable_theme_text_pairs_and_menu_hides_undo(ui):
         assert value == ["엑셀로 저장", "보기 설정", "고급 설정", "작업 관리"]
         capture(window, f"v26-menu-{theme}.png")
         QMetaObject.invokeMethod(menu, "close")
+
+
+def test_home_columns_and_selected_tab_underline_follow_the_view(ui):
+    backend, window, keys, _ = ui
+    grid = visual(window.contentItem(), "homeWorkspaceGrid")
+    for width, columns in ((1000, 3), (1380, 4), (1650, 5)):
+        window.resize(width, 780)
+        QTest.qWait(70)
+        assert grid.property("columns") == columns
+    window.resize(1380, 920)
+    backend.openWorkspace(keys[0])
+    backend.openWorkspace(keys[1])
+    QTest.qWait(100)
+    for key, other in (keys, keys[::-1]):
+        click(window, visual(window.contentItem(), "workspaceTab_" + key))
+        wait_for(lambda: not backend.jobs and backend.state["workspaceId"] == key)
+        active = visual(window.contentItem(), "workspaceUnderline_" + key)
+        inactive = visual(window.contentItem(), "workspaceUnderline_" + other)
+        assert active.isVisible() and active.width() > 100 and active.height() == 3
+        assert not inactive.isVisible()
+    click(window, window.findChild(QObject, "homeButton"))
+    assert visual(window.contentItem(), "homeUnderline").isVisible()
+    assert all(not visual(window.contentItem(), "workspaceUnderline_" + key).isVisible() for key in keys)
+
+
+def test_choice_hover_color_stays_between_idle_and_hover_colors(ui):
+    backend, window, keys, _ = ui
+    seed_review(backend, keys[0])
+    combo = visual(window.contentItem(), "category_0004_combo")
+    point = combo.mapToScene(QPointF(combo.width() - 32, 5)).toPoint()
+    center = combo.mapToScene(QPointF(combo.width() / 2, combo.height() / 2)).toPoint()
+    for theme in ("light", "dark"):
+        backend.setTheme(theme)
+        QTest.mouseMove(window, QPoint(5, 80))
+        QTest.qWait(420)
+        idle = window.grabWindow().pixelColor(point).value()
+        QTest.mouseMove(window, center)
+        assert combo.property("hovered")
+        samples = []
+        for _ in range(6):
+            QTest.qWait(25)
+            samples.append(window.grabWindow().pixelColor(point).value())
+        QTest.qWait(170)
+        hovered = window.grabWindow().pixelColor(point).value()
+        assert idle != hovered
+        low, high = sorted((idle, hovered))
+        assert all(low <= sample <= high for sample in samples), (theme, idle, samples, hovered)

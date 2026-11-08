@@ -25,6 +25,8 @@ ToolButton {
             scale: 1 - 0.18 * Math.sin(Math.PI * phase)
             Shape {
                 anchors.fill: parent
+                preferredRendererType: Shape.CurveRenderer
+                antialiasing: true
                 opacity: 1 - symbol.phase
                 rotation: 45 * symbol.phase
                 ShapePath {
@@ -37,6 +39,8 @@ ToolButton {
             }
             Shape {
                 anchors.fill: parent
+                preferredRendererType: Shape.CurveRenderer
+                antialiasing: true
                 opacity: symbol.phase
                 rotation: -45 * (1 - symbol.phase)
                 ShapePath {

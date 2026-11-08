@@ -4,6 +4,7 @@ import QtQuick.Layouts
 
 Dialog {
     id: dialog
+    parent: Overlay.overlay
     property string acceptLabel: "확인"
     property string acceptObjectName: objectName + "Accept"
     property bool acceptEnabled: true

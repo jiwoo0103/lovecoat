@@ -10,7 +10,13 @@ ApplicationWindow {
     minimumWidth: 1000
     minimumHeight: 720
     visible: true
-    title: "외투 작업실 2" + (appState.home ? "" : " · " + appState.name)
+    readonly property string appName: "외투작업실"
+    title: appName + (appState.home ? "" : " · " + appState.name)
+    flags: Qt.platform.os === "windows"
+           ? Qt.Window | Qt.CustomizeWindowHint | Qt.WindowSystemMenuHint | Qt.WindowMinimizeButtonHint
+             | Qt.WindowMaximizeButtonHint | Qt.WindowCloseButtonHint | Qt.ExpandedClientAreaHint | Qt.NoTitleBarBackgroundHint
+           : Qt.Window
+    readonly property real nativeTitleHeight: SafeArea.margins.top
     color: Theme.canvas
     font.family: "Malgun Gothic"
     font.pixelSize: 14
@@ -54,6 +60,24 @@ ApplicationWindow {
             ageFilter.currentIndex > 0 ? ageFilter.currentText : "",
             categoryFilter.currentIndex > 0 ? categoryFilter.currentText : "")
     }
+    header: Rectangle {
+        id: titleBar
+        objectName: "titleBar"
+        height: window.nativeTitleHeight > 0 ? window.nativeTitleHeight : 36
+        color: Theme.canvas
+        RowLayout {
+            anchors.fill: parent
+            anchors.leftMargin: 14
+            // The Windows Qt platform uses three caption buttons, each 1.5 times the caption height.
+            anchors.rightMargin: window.nativeTitleHeight > 0 ? Math.floor(window.nativeTitleHeight * 1.5) * 3 + 10 : 12
+            spacing: 8
+            CoatMark { Layout.preferredWidth: 20; Layout.preferredHeight: 20 }
+            Label { text: window.appName; color: Theme.text; font.bold: true }
+            Item { Layout.fillWidth: true }
+            ThemeToggle { Layout.fillHeight: true }
+        }
+        Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Theme.border }
+    }
     footer: Rectangle {
         height: 48
         color: Theme.canvas
@@ -68,15 +92,21 @@ ApplicationWindow {
                 flat: true
                 implicitWidth: 82
                 Layout.fillHeight: true
-                checkable: true
-                checked: appState.home
                 focusPolicy: Qt.NoFocus
                 enabled: !appState.navigationBlocked
                 background: Rectangle {
                     color: parent.hovered ? Theme.control : "transparent"
-                    Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 2; color: Theme.primary; visible: appState.home }
                 }
-                contentItem: RowLayout { spacing: 8; AppIcon { name: "home"; ink: Theme.text } Label { text: "홈" } }
+                Rectangle {
+                    objectName: "homeUnderline"
+                    anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 2 }
+                    height: 3; radius: 1.5; color: Theme.tabIndicator; visible: appState.home; z: 1
+                }
+                contentItem: RowLayout {
+                    spacing: 8
+                    AppIcon { name: "home"; ink: Theme.text }
+                    Label { text: "홈"; color: Theme.text; font.bold: appState.home }
+                }
                 onClicked: appBackend.goHome()
             }
             ListView {
@@ -88,7 +118,7 @@ ApplicationWindow {
                 spacing: 5
                 clip: true
                 model: appState.openWorkspaces
-                ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AsNeeded }
+                ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AsNeeded; height: 4 }
                 delegate: ActionButton {
                     id: tabButton
                     required property var modelData
@@ -96,13 +126,12 @@ ApplicationWindow {
                     height: workspaceTabs.height
                     width: Math.min(230, Math.max(140, implicitWidth))
                     text: modelData.name
-                    checkable: true
+                    readonly property bool selectedWorkspace: !appState.home && appState.workspaceId === modelData.id
                     focusPolicy: Qt.NoFocus
-                    checked: !appState.home && appState.workspaceId === modelData.id
                     enabled: !appState.navigationBlocked
                     contentItem: RowLayout {
                         spacing: 8
-                        Label { Layout.fillWidth: true; text: tabButton.text; color: tabButton.checked ? Theme.text : Theme.secondary; elide: Text.ElideRight }
+                        Label { Layout.fillWidth: true; text: tabButton.text; color: tabButton.selectedWorkspace ? Theme.text : Theme.secondary; font.bold: tabButton.selectedWorkspace; elide: Text.ElideRight }
                         ActionButton {
                             objectName: "closeWorkspace_" + tabButton.modelData.id
                             text: ""
@@ -120,8 +149,12 @@ ApplicationWindow {
                     background: Rectangle {
                         radius: 6
                         color: tabButton.hovered ? Theme.control : "transparent"
-                        Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 2; color: Theme.primary; visible: tabButton.checked }
                         border.color: tabButton.visualFocus ? Theme.primary : "transparent"
+                    }
+                    Rectangle {
+                        objectName: "workspaceUnderline_" + tabButton.modelData.id
+                        anchors { left: parent.left; right: parent.right; bottom: parent.bottom; leftMargin: 3; rightMargin: 3; bottomMargin: 4 }
+                        height: 3; radius: 1.5; color: Theme.tabIndicator; visible: tabButton.selectedWorkspace; z: 1
                     }
                     onClicked: { var key = modelData.id; window.contentItem.forceActiveFocus(); appBackend.requestWorkspace(key) }
                 }
@@ -148,13 +181,14 @@ ApplicationWindow {
         spacing: 10
         RowLayout {
             objectName: "appHeader"
+            visible: window.working
             Layout.minimumHeight: 36
             Layout.fillWidth: true
             spacing: 12
             Label { visible: window.working; text: appState.name; font.pixelSize: 21; font.bold: true; color: Theme.text; Layout.maximumWidth: window.width * 0.4; elide: Text.ElideRight }
             Label { visible: window.working; text: appState.date + " · " + appState.counts.total + "벌"; color: Theme.secondary }
             Item { Layout.fillWidth: true }
-            Label { visible: window.working; text: appState.workspaceLocked ? "엑셀 저장 중 · 입력 잠금" : (appState.saved ? "자동 저장" : "저장 확인 필요"); color: appState.saved ? Theme.secondary : Theme.pendingText; font.pixelSize: 11 }
+            Label { visible: window.working && (appState.workspaceLocked || !appState.saved); text: appState.workspaceLocked ? "엑셀 저장 중 · 입력 잠금" : "저장 확인 필요"; color: appState.saved ? Theme.secondary : Theme.pendingText; font.pixelSize: 11 }
             ActionButton {
                 visible: window.working
                 objectName: "excelExportButton"
@@ -164,7 +198,6 @@ ApplicationWindow {
                 enabled: !appState.navigationBlocked
                 onClicked: { window.contentItem.forceActiveFocus(); transferDialog.open() }
             }
-            ThemeToggle {}
             ActionButton {
                 visible: window.working
                 objectName: "workspaceMenuButton"

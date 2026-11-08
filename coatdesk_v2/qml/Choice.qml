@@ -27,6 +27,7 @@ RowLayout {
         objectName: root.objectName + "_combo"
         Layout.fillWidth: true
         implicitHeight: 32
+        hoverEnabled: true
         model: [""].concat(root.choices)
         currentIndex: Math.max(0, model.indexOf(root.value))
         displayText: root.value && model.indexOf(root.value) < 0 ? root.value + " · 다시 선택" :
@@ -49,7 +50,22 @@ RowLayout {
         }
         leftPadding: 8
         rightPadding: 26
-        background: Rectangle { radius: 6; color: combo.hovered ? Theme.control : "transparent"; border.color: combo.visualFocus ? Theme.focusRing : "transparent"; border.width: combo.visualFocus ? 2 : 0; Behavior on color { enabled: !Theme.transitioning; ColorAnimation { duration: Theme.duration } } }
+        background: Item {
+            Rectangle {
+                anchors.fill: parent
+                radius: 6
+                color: Theme.control
+                opacity: combo.hovered && !root.requiresReview ? 1 : 0
+                Behavior on opacity { NumberAnimation { duration: Theme.duration } }
+            }
+            Rectangle {
+                anchors.fill: parent
+                radius: 6
+                color: root.requiresReview ? Theme.reviewField : "transparent"
+                border.color: combo.visualFocus ? Theme.focusRing : Theme.reviewBorder
+                border.width: combo.visualFocus ? 2 : (root.requiresReview ? 1 : 0)
+            }
+        }
         popup: Popup {
             id: optionsPopup
             parent: Overlay.overlay
@@ -59,6 +75,7 @@ RowLayout {
             height: Math.min(360, list.contentHeight+12)
             padding: 6
             modal: true
+            dim: false
             focus: true
             closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
             onOpened: { if (root.host) root.host.popupCount++; list.currentIndex = combo.currentIndex; list.forceActiveFocus() }

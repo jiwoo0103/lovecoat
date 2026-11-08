@@ -59,9 +59,9 @@ Item {
     onZoomRequested: function(code) { viewport.zoomRequested(code) }
     onHeadRequested: function(code) { viewport.headRequested(code) }
     radius: 10
-    color: record.needsReview ? Theme.pending : (record.excluded ? Theme.control : Theme.surface)
-    border.color: record.needsReview ? Theme.pendingBorder : Theme.border
-    border.width: 1
+    color: record.excluded ? Theme.control : Theme.surface
+    border.color: record.needsReview ? Theme.reviewBorder : Theme.border
+    border.width: record.needsReview ? 2 : 1
     Behavior on color { enabled: !Theme.transitioning; ColorAnimation { duration: 100 } }
 
     ColumnLayout {

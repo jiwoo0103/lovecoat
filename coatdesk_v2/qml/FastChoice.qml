@@ -34,7 +34,7 @@ ColumnLayout {
                 font.pixelSize: 12
                 focusPolicy: Qt.NoFocus
                 contentItem: Text { text: parent.text; font: parent.font; color: root.value === modelData ? (root.requiresReview ? Theme.pendingText : Theme.primaryText) : Theme.text; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
-                background: Rectangle { radius: 6; color: root.value === modelData ? (root.requiresReview ? Theme.pending : Theme.primary) : (parent.hovered ? Theme.hover : Theme.control); border.color: root.requiresReview && root.value === modelData ? Theme.pendingBorder : Theme.border }
+                background: Rectangle { radius: 6; color: root.value === modelData ? (root.requiresReview ? Theme.reviewField : Theme.primary) : (parent.hovered ? Theme.hover : Theme.control); border.color: root.requiresReview && root.value === modelData ? Theme.reviewBorder : Theme.border }
                 onClicked: root.committed(modelData)
                 ToolTip.visible: hovered && root.hint.length > 0
                 ToolTip.text: root.hint
