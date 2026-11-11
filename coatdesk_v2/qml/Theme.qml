@@ -25,6 +25,8 @@ QtObject {
     readonly property color newWorkspaceText: blend("#4267A5", "#FFFFFF")
     readonly property color newWorkspaceCaption: blend("#62625D", "#FFFFFF")
     readonly property color workspaceHeading: blend("#EEF2F7", "#2C3542")
+    readonly property color workspaceHeadingHover: blend("#E0E8F1", "#374456")
+    readonly property color workspaceHeadingPressed: blend("#D4DFED", "#414F63")
     readonly property color tabIndicator: blend("#2868C5", "#77ACF5")
     readonly property color reviewBorder: blend("#BF5754", "#DF827D")
     readonly property color reviewField: blend("#FCEBEA", "#472B2D")

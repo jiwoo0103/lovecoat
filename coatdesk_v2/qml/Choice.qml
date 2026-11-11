@@ -68,9 +68,10 @@ RowLayout {
         }
         popup: Popup {
             id: optionsPopup
-            parent: Overlay.overlay
-            x: Math.min(parent.width-width-8, Math.max(8, combo.mapToItem(parent, 0, 0).x))
-            y: Math.min(parent.height-height-8, Math.max(8, combo.mapToItem(parent, 0, combo.height).y+4))
+            parent: combo
+            x: 0
+            y: combo.height + 4
+            margins: 8
             width: Math.max(190, Math.min(300, combo.width))
             height: Math.min(360, list.contentHeight+12)
             padding: 6

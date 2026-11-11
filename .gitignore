@@ -10,6 +10,7 @@ dist/
 dist-debug/
 dist-current/
 dist-releases/
+/설치파일/
 *.spec
 *.coat.json
 *.dpapi

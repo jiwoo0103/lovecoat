@@ -53,9 +53,10 @@ ColumnLayout {
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 50
-                        color: Theme.workspaceHeading
+                        color: tile.down ? Theme.workspaceHeadingPressed : (tile.hovered ? Theme.workspaceHeadingHover : Theme.workspaceHeading)
                         topLeftRadius: 9
                         topRightRadius: 9
+                        Behavior on color { enabled: !Theme.transitioning; ColorAnimation { duration: Theme.duration } }
                         RowLayout {
                             anchors.fill: parent
                             anchors.leftMargin: 17

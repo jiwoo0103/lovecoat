@@ -304,23 +304,39 @@ ApplicationWindow {
                     width: 230
                     padding: 14
                     modal: true
-                    property int previewRows: appState.gridRows
-                    property int previewColumns: appState.gridColumns
+                    dim: false
+                    property int previewRows: 0
+                    property int previewColumns: 0
+                    property bool pointerPreview: false
+                    function resetPreview() {
+                        pointerPreview = false
+                        previewRows = appState.gridRows
+                        previewColumns = appState.gridColumns
+                    }
+                    function previewWithKeys(rowStep, columnStep) {
+                        pointerPreview = false
+                        previewRows = Math.min(4, Math.max(1, previewRows + rowStep))
+                        previewColumns = Math.min(4, Math.max(1, previewColumns + columnStep))
+                    }
+                    onAboutToShow: resetPreview()
                     onOpened: gridPicker.forceActiveFocus()
                     background: Rectangle { color: Theme.surface; radius: 10; border.color: Theme.border }
                     contentItem: ColumnLayout {
                         id: gridPicker
                         focus: true
-                        Keys.onLeftPressed: layoutPopup.previewColumns = Math.max(1, layoutPopup.previewColumns-1)
-                        Keys.onRightPressed: layoutPopup.previewColumns = Math.min(4, layoutPopup.previewColumns+1)
-                        Keys.onUpPressed: layoutPopup.previewRows = Math.max(1, layoutPopup.previewRows-1)
-                        Keys.onDownPressed: layoutPopup.previewRows = Math.min(4, layoutPopup.previewRows+1)
+                        Keys.onLeftPressed: layoutPopup.previewWithKeys(0, -1)
+                        Keys.onRightPressed: layoutPopup.previewWithKeys(0, 1)
+                        Keys.onUpPressed: layoutPopup.previewWithKeys(-1, 0)
+                        Keys.onDownPressed: layoutPopup.previewWithKeys(1, 0)
                         Keys.onReturnPressed: { appBackend.setLayout(layoutPopup.previewRows, layoutPopup.previewColumns); layoutPopup.close() }
                         Label { text: layoutPopup.previewRows + "행 × " + layoutPopup.previewColumns + "열 · " + (layoutPopup.previewRows*layoutPopup.previewColumns) + "벌" }
                         GridLayout {
                             columns: 4
                             columnSpacing: 5
                             rowSpacing: 5
+                            HoverHandler {
+                                onHoveredChanged: if (!hovered && layoutPopup.pointerPreview) layoutPopup.resetPreview()
+                            }
                             Repeater {
                                 model: 16
                                 ToolButton {
@@ -329,7 +345,11 @@ ApplicationWindow {
                                     implicitWidth: 45
                                     implicitHeight: 36
                                     hoverEnabled: true
-                                    onHoveredChanged: if (hovered) { layoutPopup.previewRows = Math.floor(index/4)+1; layoutPopup.previewColumns = index%4+1 }
+                                    onHoveredChanged: if (hovered) {
+                                        layoutPopup.pointerPreview = true
+                                        layoutPopup.previewRows = Math.floor(index/4)+1
+                                        layoutPopup.previewColumns = index%4+1
+                                    }
                                     background: Rectangle { radius: 4; color: Math.floor(parent.index/4) < layoutPopup.previewRows && parent.index%4 < layoutPopup.previewColumns ? Theme.primary : Theme.control }
                                     onClicked: { appBackend.setLayout(Math.floor(index/4)+1, index%4+1); layoutPopup.close() }
                                 }

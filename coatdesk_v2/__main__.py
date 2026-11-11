@@ -18,6 +18,16 @@ from . import APP_NAME, __version__
 from .images import Photos
 
 
+def _hide_windows_frame_border(window):
+    # The Windows 11 frame border sits outside the native caption buttons.
+    dwm = ctypes.WinDLL("dwmapi").DwmSetWindowAttribute
+    dwm.argtypes = [ctypes.c_void_p, ctypes.c_uint32, ctypes.c_void_p, ctypes.c_uint32]
+    dwm.restype = ctypes.c_long
+    border_color_attribute = 34  # DWMWA_BORDER_COLOR
+    no_border_color = ctypes.c_uint32(0xFFFFFFFE)  # DWMWA_COLOR_NONE
+    dwm(window.winId(), border_color_attribute, ctypes.byref(no_border_color), ctypes.sizeof(no_border_color))
+
+
 def main():
     parser = argparse.ArgumentParser(description=APP_NAME)
     parser.add_argument("--data-dir", type=Path)
@@ -70,6 +80,13 @@ def main():
         print("\n".join(messages), file=sys.stderr)
         lock.unlock()
         return 1
+    if sys.platform == "win32" and sys.getwindowsversion().build >= 22000 and app.platformName() == "windows":
+        window = engine.rootObjects()[0]
+        _hide_windows_frame_border(window)
+        # Qt refreshes the native frame when the app changes its color scheme.
+        app.styleHints().colorSchemeChanged.connect(
+            lambda _scheme: _hide_windows_frame_border(window), Qt.ConnectionType.QueuedConnection
+        )
     if args.source:
         backend.createWorkspace("사진 검증", "", str(args.source), str(args.range_start), str(args.range_end), "")
     elif args.smoke_test:

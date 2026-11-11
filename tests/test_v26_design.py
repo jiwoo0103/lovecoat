@@ -187,3 +187,62 @@ def test_choice_hover_color_stays_between_idle_and_hover_colors(ui):
         assert idle != hovered
         low, high = sorted((idle, hovered))
         assert all(low <= sample <= high for sample in samples), (theme, idle, samples, hovered)
+
+
+def test_choice_popup_tracks_fields_after_resize(ui):
+    backend, window, keys, _ = ui
+    seed_review(backend, keys[0])
+    for width, height in ((1380, 920), (1920, 1020), (1000, 720), (1380, 920)):
+        window.resize(width, height)
+        QTest.qWait(100)
+        for code in ("0001", "0002"):
+            combo = visual(window.contentItem(), f"category_{code}_combo")
+            click(window, combo)
+            context = QQmlEngine.contextForObject(combo)
+            value, error = QQmlExpression(context, combo,
+                "popup.contentItem.mapToItem(null, 0, 0).x - popup.padding").evaluate()
+            assert not error and window.property("popupCount") == 1
+            popup_width, error = QQmlExpression(context, combo, "popup.width").evaluate()
+            expected = min(combo.mapToScene(QPointF()).x(), width - popup_width - 8)
+            assert not error and abs(value - expected) < 1, (width, code, value)
+            QTest.keyClick(window, Qt.Key_Escape)
+            QTest.qWait(70)
+            assert window.property("popupCount") == 0
+
+
+def test_layout_preview_resets_without_dimming_or_applying(ui):
+    backend, window, keys, _ = ui
+    seed_review(backend, keys[0])
+    backend.setLayout(2, 2)
+    button = window.findChild(QObject, "layoutButton")
+    popup = window.findChild(QObject, "layoutPopup")
+
+    def preview():
+        return popup.property("previewRows"), popup.property("previewColumns")
+
+    point = QPoint(8, 250)
+    QTest.mouseMove(window, point)
+    QTest.qWait(170)
+    idle = window.grabWindow().pixelColor(point)
+    click(window, button)
+    assert popup.property("opened") and preview() == (2, 2)
+    assert window.grabWindow().pixelColor(point) == idle
+    last = visual(window.contentItem(), "layoutCell_15")
+    if last is None:
+        last = window.findChild(QObject, "layoutCell_15")
+    end = last.mapToScene(QPointF(last.width() / 2, last.height() / 2)).toPoint()
+    QTest.mouseMove(window, end)
+    assert preview() == (4, 4)
+    QTest.mouseMove(window, point)
+    assert preview() == (2, 2)
+    QTest.mouseMove(window, end)
+    QTest.keyClick(window, Qt.Key_Escape)
+    QTest.qWait(70)
+    assert not popup.property("opened")
+    click(window, button)
+    assert preview() == (2, 2)
+    QTest.keyClick(window, Qt.Key_Right)
+    assert preview() == (2, 3) and backend.state["gridColumns"] == 2
+    QTest.keyClick(window, Qt.Key_Return)
+    QTest.qWait(70)
+    assert not popup.property("opened") and backend.state["gridColumns"] == 3

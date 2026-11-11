@@ -1,4 +1,4 @@
-"""Build into a new release directory. No install or global configuration changes."""
+"""Build into a new release directory and publish the installer at the project root."""
 from __future__ import annotations
 
 import argparse
@@ -14,9 +14,22 @@ import uuid
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+INSTALLER_DIR = ROOT / "설치파일"
 sys.path.insert(0, str(ROOT))
 from coatdesk_v2 import APP_NAME, __version__  # noqa: E402 - direct script invocation needs the repository root
 from coatdesk_v2.category import POLICY_VERSION, DEFAULT_CATEGORY_THRESHOLDS  # noqa: E402
+
+
+def publish_installer(source: Path) -> Path:
+    INSTALLER_DIR.mkdir(exist_ok=True)
+    destination = INSTALLER_DIR / source.name
+    pending = INSTALLER_DIR / f".{source.name}.{uuid.uuid4().hex}.tmp"
+    try:
+        shutil.copy2(source, pending)
+        pending.replace(destination)
+    finally:
+        pending.unlink(missing_ok=True)
+    return destination
 
 
 def main():
@@ -119,18 +132,22 @@ def main():
     manifest.write_text("\n".join(lines)+"\n", encoding="utf-8-sig")
     compiler = args.makensis or (Path(shutil.which("makensis")) if shutil.which("makensis") else None)
     installer = release / f"CoatDesk-{__version__}-Setup.exe"
+    published_installer = None
     if compiler:
         subprocess.run([str(compiler.resolve()), "/INPUTCHARSET", "UTF8", f"/DAPP_VERSION={__version__}", f"/DPAYLOAD={payload}", f"/DOUTPUT={installer}",
                         f"/DUNINSTALL_MANIFEST={manifest}", str(ROOT / "installer/CoatDesk2.nsi")], cwd=ROOT, check=True)
+        published_installer = publish_installer(installer)
     report = {"version": __version__, "executable": str(payload / "CoatDesk2.exe"), "trained_models": 4,
               "category_ai": True, "category_policy": POLICY_VERSION, "category_thresholds": DEFAULT_CATEGORY_THRESHOLDS,
               "panel_assets": model_manifest, "category_assets": category_manifest, "embedded_sheet_template": True, "excel_export": True,
-              "installer": str(installer) if installer.exists() else None,
+              "installer": str(published_installer) if published_installer else None,
+              "archived_installer": str(installer) if published_installer else None,
               "google_configured": False, "files": len(files),
               "bytes": sum(p.stat().st_size for p in files),
               "dependencies": {p: importlib.metadata.version(p) for p in ("PySide6-Essentials", "PyInstaller", "numpy", "Pillow", "openpyxl")}}
-    if installer.exists():
-        report["installer_sha256"] = hashlib.sha256(installer.read_bytes()).hexdigest()
+    if published_installer:
+        with installer.open("rb") as stream:
+            report["installer_sha256"] = hashlib.file_digest(stream, "sha256").hexdigest()
     (release / "build-report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     # This pointer is separate from the original prototype's latest.txt.
     if not args.no_update_latest:
