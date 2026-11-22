@@ -1,4 +1,4 @@
 """Installable QML workspace application. The original prototype stays separate."""
 
-__version__ = "2.6.3"
+__version__ = "2.6.4"
 APP_NAME = "외투작업실"

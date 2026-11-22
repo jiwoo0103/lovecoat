@@ -12,6 +12,8 @@ from coatdesk_ab.data import SHAPES, SIZES, letterbox, load_photo
 from coatdesk_ab.network import PhotoClassifier
 from coatdesk_locator.model import build_detector, choose_detection
 
+SIZE_CLASSES_20 = [str(n) for n in range(60, 171, 10)] + ["2XS", "XS", "S", "M", "L", "XL", "2XL", "3XL"]
+
 
 def tensor(photo):
     return torch.from_numpy(np.asarray(photo).transpose(2,0,1).copy()).float()/255
@@ -21,7 +23,7 @@ class Models:
     def __init__(self,directory):
         metadata = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
         self.size_classes = metadata.get("size_classes", SIZES)
-        if self.size_classes not in (SIZES, ["70", *SIZES]):
+        if self.size_classes not in (SIZES, ["70", *SIZES], SIZE_CLASSES_20):
             raise ValueError("지원하지 않는 사이즈 모델 출력 순서입니다.")
         torch.set_num_threads(max(1,min(4,os.cpu_count() or 1)))
         self.detector=build_detector().cpu().eval()
