@@ -3,6 +3,14 @@
 Windows 설치형 사진 검수 프로그램입니다. **작업공간 만들기 → 분석 → 검수·수정 → 엑셀 파일에 날짜별 시트 저장** 순서로 사용합니다.
 Python/PySide6 6.12 + Qt Quick/QML + SQLite로 구현했으며 서버나 유료 AI API를 사용하지 않습니다.
 
+[최신 2.6.4 설치파일 다운로드](https://github.com/jiwoo0103/lovecoat/releases/download/v2.6.4/CoatDesk-2.6.4-Setup.exe) · [다운로드 전체 목록](https://github.com/jiwoo0103/lovecoat/releases/tag/v2.6.4)
+
+처음 사용한다면 [사용자 매뉴얼](docs/USER_MANUAL.md)을 읽으세요. 설치부터 사진 불러오기·분석·확인·수정·엑셀 저장·문제 해결까지 기능별로 설명합니다.
+
+- 사용자 매뉴얼: [PDF](output/pdf/CoatDesk_USER_MANUAL.pdf) · [Word](output/docx/CoatDesk_USER_MANUAL.docx)
+- 공부 설명서: [PDF](output/pdf/CoatDesk_STUDY_EXPLAINED.pdf) · [Word](output/docx/CoatDesk_STUDY_EXPLAINED.docx)
+- [최종 보관 파일과 정리 기준](docs/PROJECT_DELIVERY.md)
+
 사용자가 2.6.4를 최종 구성으로 선택해 이번 개발을 마무리했습니다. [자세한 공부 설명서](docs/CoatDesk_STUDY_EXPLAINED.md)는 기존 공부 목록을 바탕으로 Python·QML·SQLite·AI 학습과 평가·검수·엑셀 보존·Windows 배포를 실제 코드와 예제로 설명합니다. [최종 검증과 한계](docs/V264_RELEASE_20261122.md)도 함께 확인할 수 있습니다.
 
 **2.6.1 업데이트**에서는 창 제목 표시줄에서 해·달 아이콘으로 테마를 바꿉니다. 홈 작업 카드는 창 너비에 맞춰 배치하며, 작업명과 촬영일·사진 범위·옷 수를 나누어 표시합니다. 하단에서 현재 열린 작업 탭은 파란 밑줄로 표시합니다.
