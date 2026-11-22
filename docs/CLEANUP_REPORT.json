@@ -1,0 +1,112 @@
+{
+  "date": "2026-11-23",
+  "source_commit": "74d98e9",
+  "deleted_files": 353235,
+  "deleted_bytes": 83522775156,
+  "free_space_increase_bytes": 85196341248,
+  "drive_free_after": 151939530752,
+  "source_files_preserved": 232,
+  "latest_installer_preserved": true,
+  "document_exports_preserved": 4,
+  "remaining_failed_files": 0,
+  "deletion_groups": {
+    "CoatDesk.spec": {
+      "files": 1,
+      "bytes": 963
+    },
+    "설치파일": {
+      "files": 1,
+      "bytes": 477227765
+    },
+    "vendor": {
+      "files": 133,
+      "bytes": 105677156
+    },
+    "tests": {
+      "files": 50,
+      "bytes": 1197143
+    },
+    "scripts": {
+      "files": 36,
+      "bytes": 890547
+    },
+    "resources": {
+      "files": 11,
+      "bytes": 115145240
+    },
+    "outputs": {
+      "files": 1,
+      "bytes": 389367
+    },
+    "model-results": {
+      "files": 11798,
+      "bytes": 2312508278
+    },
+    "dist-releases": {
+      "files": 115069,
+      "bytes": 32018244649
+    },
+    "dist-debug": {
+      "files": 1169,
+      "bytes": 646908831
+    },
+    "dist-current": {
+      "files": 420,
+      "bytes": 368734106
+    },
+    "dist": {
+      "files": 420,
+      "bytes": 368731466
+    },
+    "coatdesk_v2": {
+      "files": 13,
+      "bytes": 251912
+    },
+    "coatdesk_locator_v2": {
+      "files": 2,
+      "bytes": 31828
+    },
+    "coatdesk_locator": {
+      "files": 3,
+      "bytes": 11633
+    },
+    "coatdesk_ab": {
+      "files": 4,
+      "bytes": 18542
+    },
+    "coatdesk": {
+      "files": 11,
+      "bytes": 198725
+    },
+    "build": {
+      "files": 121,
+      "bytes": 218171046
+    },
+    ".venv": {
+      "files": 14018,
+      "bytes": 1091431353
+    },
+    ".ruff_cache": {
+      "files": 17,
+      "bytes": 11546
+    },
+    ".pytest_cache": {
+      "files": 5,
+      "bytes": 38207
+    },
+    ".local": {
+      "files": 209486,
+      "bytes": 45760679396
+    },
+    ".downloads": {
+      "files": 444,
+      "bytes": 36228970
+    },
+    ".codex-attachments": {
+      "files": 1,
+      "bytes": 46083
+    }
+  },
+  "obsolete_google_connection_json_deleted": true,
+  "outside_project_originals_and_installed_app_untouched": true
+}
